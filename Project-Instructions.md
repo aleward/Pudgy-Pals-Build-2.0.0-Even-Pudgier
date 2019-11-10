@@ -27,284 +27,6 @@ Expect this to be 2-3x more work than the hardest project this semester. The bes
 * Programming language, graphics and compute APIs, and target platforms are up to you.
 * You are allowed to use existing code and libraries. These should be prominently credited and your code should be easily identifiable. Be incredibly clear about what is your work and what is not.
 
-# Project Ideas
-
-## Denoising
-
-![](./images/denoising.jpg)
-
-* Add custom de-noising algorithms to Path Tracer and/or DXR
-* Used everywhere real-time ray/path-tracing is used
-* Buzz in all of rendering community
-* Can put you in touch with Alain Galvan (Nov 20 guest speaker)
-  * Blog post: https://alain.xyz/blog/raytracing-denoising
-
-## DirectX Raytracing
-
-![](https://pbs.twimg.com/media/DjJE_7LUYAAMgBB.jpg)
-
-* Real-time rendering pipeline + add ons
-
-Resources:
-* http://www.realtimerendering.com/erich/Ray%20Tracing%20at%20Last.pptx
-* https://github.com/NVIDIAGameWorks/DxrTutorials
-* https://github.com/Microsoft/DirectX-Graphics-Samples/tree/master/Samples/Desktop/D3D12Raytracing
-* https://developer.nvidia.com/rtx/raytracing/dxr/DX12-Raytracing-tutorial-Part-1
-* https://developer.nvidia.com/rtx/raytracing/dxr/DX12-Raytracing-tutorial-Part-2
-* http://intro-to-dxr.cwyman.org
-* http://cwyman.org/code/dxrTutors/dxr_tutors.md.html
-
-## Machine Learning / Deep Learning
-
-The field is open and vast. You can suggest everything from improving computer vision to page rank and so on. Pretty much everything is on the table for this.
-
-## Mesh Segmentation and Classification
-
-* Huge amounts of open Photogrammetry and Lidar models available today
-* Big effort going on in the US Army - Look up “One World Terrain”
-* Watch: USC ICT Videos
-  * https://www.youtube.com/watch?v=1IqkogPxWPY
-  * https://www.youtube.com/watch?v=w5LsvKPmNJI
-* https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10207/1/Visualizing-UAS-collected-imagery-using-augmented-reality/10.1117/12.2262864.short?SSO=1
-* https://arxiv.org/ftp/arxiv/papers/1711/1711.10693.pdf
-* http://trajectorymagazine.com/rapid-terrain-generation/
-* https://scholarspace.manoa.hawaii.edu/bitstream/10125/59634/1/0194.pdf
-* http://ict.usc.edu/pubs/Producing%20Usable%20Simulation%20Terrain%20Data%20from%20UAS-Collected%20Imagery.pdf
-
-Note: Shehzan can help with source data.
-
-## WebGPU - Next-generation 3D Graphics on the Web
-
-Background
-* [Graphics Topics in Chrome](https://docs.google.com/presentation/d/e/2PACX-1vQEdp8Ei2apjB30yQ8zQL8edf-B5c7Wf07RPlmvGySEieE_3loxVTkNgliuqqpuvtw3NLuTM3mYIhBY/pub)
-* [Designing a Next-Gen Graphics API for the Web](https://docs.google.com/presentation/d/1Z_3-3V6FRsF8OJNeH7yc6UKtgXy90Ggff07V9Z6uo6U/edit#slide=id.g644e7765b4b81e56_540) by Kai Ninomiya
-* https://github.com/austinEng/webgpu-samples
-* https://doc.babylonjs.com/extensions/webgpu
-* https://webkit.org/demos/webgpu/
-* https://github.com/gpuweb/gpuweb/wiki/Implementation-Status
-
-Ideas
-* glTF 2.0 PBR renderer for WebGPU
-* Vulkan backend for WebGPU
-* CUDA rasterizer backend for WebGPU
-* Tensorflow operators using WebGPU compute shaders
-* Anything to help with WebGPU design
-
-## WebAssembly
-
-http://webassembly.org/
-
-![](images/webasm.jpg)
-
-* Prototype a graphics engine in C++/OpenGL ES and "compile" it for the web using WebAssembly. Provide benchmarks.
-* Answer the question: how can an existing JavaScript codebase use WebAssembly? Rewrite the whole thing in C++? Rewrite hot fine-grained modules, e.g., matrix and vector types? Rewrite hot coarse-grained modules, e.g., the physics engine?
-
-Also talk to Austin Eng, who used WebAssembly for his Senior Design, and now is a part of the Chrome team. Austin will also be a guest speaker on 11/26.
-
-## glTF
-
-https://www.khronos.org/gltf
-
-![](images/gltf.png)
-
-glTF Working Group is working to introduce a fully physically based material model. Would be amazing to integrate this with other engines as a prototype. I can introduce you to the people at the forefront of the specification and the Working Group.
-
-### 3D Tiles Runtime for Unity
-
-Collaborate with Cesium on creating a 3D Tiles runtime for Unity. Leverage the glTF importer to bring in massive mesh and point cloud datasets into Unity.
-
-Disclosure: Shehzan works for Cesium.
-
-## gpu.js
-
-https://github.com/gpujs/gpu.js
-
-Build something with gpu.js:
-
-> gpu.js is a JavaScript Acceleration library for GPGPU (General purpose computing on GPUs) in Javascript. gpu.js will automatically compile simple JavaScript functions into shader language and run them on the GPU.
-
-## Cesium
-
-https://cesiumjs.org/
-
-3D Mapping WebGL Engine
-
-Disclosure: Shehzan works for Cesium.
-
-![](images/cesium.jpg)
-
-### Integration with three.js and other engines
-
-Expand on https://cesium.com/blog/2017/10/23/integrating-cesium-with-threejs/ to fully explore integrating Cesium with other WebGL engines such as three.js and BabylonJS - both by overlaying two canvases and by combining the rendering loop.
-
-### Ocean rendering
-
-Improve the quality of the global-scale ocean/water rendering in Cesium. Add any required WebGL 2 features to Cesium.
-
-Resources
-* https://www.fxguide.com/featured/assassins-creed-iii-the-tech-behind-or-beneath-the-action/
-* http://the-witness.net/news/2012/08/regarding-water/
-* http://vterrain.org/Water/
-
-## BabylonJS
-
-https://www.babylonjs.com/
-
-![](images/babylonjs.svg)
-
-[Open Issues](https://github.com/BabylonJS/Babylon.js/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
-
-Suggested features from BabylonJS Team:
-* Cascaded Shadows
-* Area Lights
-* Real time environment filtering
-
-## Vulkan
-
-![](images/vulkan.png)
-
-### renderdoc
-
-Contribute to [renderdoc](https://github.com/baldurk/renderdoc/wiki/Vulkan).
-
-### In Defense of Batching
-
-Does batching still help with Vulkan? If so, when it is worth it?
-
-### Domain-specific shading languages
-
-Create a domain-specific shading language targeting SPIR-V. Perhaps a language tuned for CSG, voxels, or ray marching.
-
-### Utility library
-
-Implement a new abstraction layer using Vulkan that is higher level than Vulkan, but lower level than, for example, Unity.
-
-### Multithreaded Engine
-
-Prototype a small engine with multithreading for LOD and culling.
-
-### Tutorial Series
-
-Write a _Vulkan for OpenGL developers_ tutorial series.
-
-## VR
-
-1. Performance analysis of porting an engine to VR
-    * Naive stereo rendering vs. multi-view
-2. Implement barrel distortion and chromatic aberration filters with optimizations
-    * In practice, use filters from VR vendors to avoid making users sick
-3. More precise object culling with a volume derived from the hidden area mesh
-    * Is this practical and useful?
-4. In each eye, most of the same fragments will pass the depth test, can this coherence be used to optimize?
-    * Evaluate the checkerboard stencil in radial density masking as a general optimization
-5. Does it have better visual quality than rendering a scene at half-resolution and upsampling with only a nominal cost?
-    * Expand radial density masking / fixed foveated rendering to apply geometric/material LOD to objects in the periphery
-6. Implement a simulation for avoiding judder
-7. Compare async timewarp, spacewarp, and late orientation warping, and heuristics for selecting between them
-8. Improve spacewarp with a sparse voxel octree
-    * Not sure if this will work, but perhaps could improve occlusion artifacts at a reasonable performance and memory cost
-
-## CUDA / GPU Computing
-
-### 3D Machine Learning
-
-3D Machine Learning = Computer Vision + Graphics + Machine Learning
-
-* http://graphics.stanford.edu/courses/cs468-17-spring/
-* https://github.com/timzhang642/3D-Machine-Learning
-
-### Autonomous Cars and Simulation
-
-GPU accelerate parts of [autonomous cars](http://www.nvidia.com/object/drive-automotive-technology.html).
-
-* https://github.com/carla-simulator/carla
-* https://www.vectorzero.io/
-* https://7dlabs.com/synscapes-overview
-* https://www.vectorzero.io/products
-
-### Embedded Systems
-
-Use Jetson kits for interesting applications in computer vision, autonomous vehicles, drones, robotics etc.
-
-See [success stories](https://developer.nvidia.com/embedded/learn/success-stories).
-
-Ps. You may need to procure hardware, but we can help with references.
-
-## Anti-Ideas
-
-Please do not propose yet-another-CUDA-fluid/smoke/cloth simulation unless it has a unique spin such as using
-* Vulkan compute shader
-* NXT compute shader
-* Multi-GPU
-* A very sophisticated simulation
-
-Likewise, please do not propose extend-my-CUDA-path-tracer-with-these-n-effects unless it is truly unique.
-
-## Previous Semesters
-
-For inspiration, browse the CIS 565 final projects from previous semesters:
-* [Fall 2018](https://cis565-fall-2018.github.io/studentwork.html)
-* [Fall 2017](https://cis565-fall-2017.github.io/studentwork.html)
-* [Fall 2016](https://cis565-fall-2016.github.io/studentwork.html)
-* [Fall 2015](http://cis565-fall-2015.github.io/studentwork.html)
-* [Fall 2014](http://cis565-fall-2014.github.io/studentwork.html)
-* [Fall 2013](http://cis565-fall-2013.github.io/studentwork.html)
-* [Fall 2012](http://cis565-fall-2012.github.io/studentwork.html)
-* [Spring 2012](http://cis565-spring-2012.github.com/studentwork.html)
-* [Spring 2011](http://www.seas.upenn.edu/~cis565/StudentWork-2011S.htm)
-
-A guideline is that your project should be better than last semester's projects; that is how we move the field forward.
-
-### Selected Projects
-* **Fall 2018**
-  * [RTX Explore](https://github.com/rtx-on/rtx-explore)
-  * [Vulkan Hybrid PBR Renderer](https://github.com/460xlin/Vulkan_Hybrid_PBR/)
-  * [GPU Rasterized And Ray Traced Real Time Rendering Using WebGL](https://github.com/WanruZhao/CIS565-Final-Project)
-  * [Cloth Simulation in Flamenco Game Engine](https://github.com/vasumahesh1/Flamenco)
-* **Fall 2017**
-  * [Pollux: Metal Pathtracer](https://github.com/WilliamKHo/Pollux-Renderer) by Youssef Victor and Will Ho
-  * [Organic Mesh Growth with SDFs](https://github.com/mmerchante/organic-mesh-growth) by Mariano Merchante and Mohamad Moneimne
-  * [BabylonJS Post-Processing and Weather System](https://github.com/HanmingZhang/Babylon.js) by Hanming Zhang and Linshen Xiao
-* **Fall 2016**
-  * [Vulkan PBR Renderer](https://github.com/jian-ru/laugh_engine) by Jian Ru
-  * [Vulkan Forward+ Renderer](https://github.com/WindyDarian/Vulkan-Forward-Plus-Renderer) by Ruoyu Fan and Xueyin Wan
-  * [PIC/FLIP Fluid with WebGL](https://github.com/austinEng/WebGL-PIC-FLIP-Fluid) by Austin Eng
-* **Fall 2015**
-  * [Forward+ Renderer using OpenGL/Compute Shaders](https://github.com/bcrusco/Forward-Plus-Renderer) by Bradley Crusco and Megan Moore
-  * [WebGL Fragment Shader Profiler](https://github.com/terrynsun/WebGL-Fragment-Shader-Profiler) by Sally Kong and Terry Sun
-  * [GPU Cloth with OpenGL Compute Shaders](https://github.com/likangning93/GPU_cloth) by Gary Li
-* **Fall 2014**
-  * [Bidirectional Path Tracer in CUDA](https://github.com/paula18/Photon-Mapping) by Paula Huelin Merino and Robbie Cassidy
-  * [GPU-Accelerated Dynamic Fracture in the Browser with WebCL](https://github.com/kainino0x/cis565final) by Kai Ninomiya and Jiatong He
-  * [Uniform grid and kd-tree in CUDA](https://github.com/jeremynewlin/Accel) by Jeremy Newlin and Danny Rerucha
-* **Fall 2013**
-  * [Surface Mesh Reconstruction from RGBD Images](https://github.com/cboots/RGBD-to-Mesh) by Collin Boots and Dalton Banks
-  * [Sparse Voxel Octree](https://github.com/otaku690/SparseVoxelOctree) by Cheng-Tso Lin
-  * [Terrain tessellation](https://github.com/mchen15/Gaia) by Mikey Chen and Vimanyu Jain
-  * [GPU Photon Mapper](https://github.com/ishaan13/PhotonMapper) by Ishaan Singh, Yingting Xiao, and Xiaoyan Zhu
-* **Fall 2012**
-  * [Non-photorealistic Rendering](http://gpuprojects.blogspot.com/) by Kong Ma
-  * [Procedural Terrain](http://gputerrain.blogspot.com/) by Tiju Thomas
-  * [KD Trees on the GPU](http://www.colorseffectscode.com/Projects/FinalProject.html) by Zakiuddin Shehzan Mohammed
-* **Spring 2012**
-  * [Single Pass Order Independent Transparency](http://gamerendering.blogspot.com/) by Sean Lilley
-  * [GPU-Accelerated Logo Detection](http://erickboke.blogspot.com/) by Yu Luo
-  * [GPU-Accelerated Simplified General Perturbation No. 4 (SGP4) Model](http://www.matthewahn.com/blog/sgp4-14558-satellites-in-orbit/) by Matthew Ahn
-* **Spring 2011**
-  * [Fast Pedestrian Recognition on the GPU](http://spevis.blogspot.com/) by Fan Deng
-  * [Screen Space Fluid Rendering](http://fastfluids.blogspot.com/) by Terry Kaleas
-  * [Deferred Shader with Screen Space Classification](http://smt565.blogspot.com/) by Sean Thomas
-
-## Conferences and Journals
-
-Browse these for ideas galore!
-
-* [Journal of Computer Graphics Techniques](http://jcgt.org/read.html)
-* [Advances in Real-Time Rendering](http://advances.realtimerendering.com/) SIGGRAPH courses
-* [Ke-Sen Huang's conference pages](http://kesen.realtimerendering.com/) - papers from SIGGRAPH, Eurographics, I3D, and elsewhere
-* [Real-Time Rendering Portal](http://www.realtimerendering.com/portal.html) and [WebGL Resources](http://www.realtimerendering.com/webgl.html) - links to an amazing amount of content
-
-Also look at the course website for more resources.
 
 # Timeline
 
@@ -449,3 +171,81 @@ Yes, as long as:
 Missing milestones is **NOT** acceptable, except if you have matters such as interviews, recruitment etc, or obtain prior permission. In that case, do the following:
 * Ensure your team presents on the day of the milestone presentations.
 * Schedule a time with a TA (preferably Ottavio) and your team prior to the milestone presentations and discuss the progress made.
+
+
+# Ideas
+
+## glTF
+
+https://www.khronos.org/gltf
+
+![](images/gltf.png)
+
+glTF Working Group is working to introduce a fully physically based material model. Would be amazing to integrate this with other engines as a prototype. I can introduce you to the people at the forefront of the specification and the Working Group.
+
+
+## Previous Semesters
+
+For inspiration, browse the CIS 565 final projects from previous semesters:
+* [Fall 2018](https://cis565-fall-2018.github.io/studentwork.html)
+* [Fall 2017](https://cis565-fall-2017.github.io/studentwork.html)
+* [Fall 2016](https://cis565-fall-2016.github.io/studentwork.html)
+* [Fall 2015](http://cis565-fall-2015.github.io/studentwork.html)
+* [Fall 2014](http://cis565-fall-2014.github.io/studentwork.html)
+* [Fall 2013](http://cis565-fall-2013.github.io/studentwork.html)
+* [Fall 2012](http://cis565-fall-2012.github.io/studentwork.html)
+* [Spring 2012](http://cis565-spring-2012.github.com/studentwork.html)
+* [Spring 2011](http://www.seas.upenn.edu/~cis565/StudentWork-2011S.htm)
+
+A guideline is that your project should be better than last semester's projects; that is how we move the field forward.
+
+### Selected Projects
+* **Fall 2018**
+  * [RTX Explore](https://github.com/rtx-on/rtx-explore)
+  * [Vulkan Hybrid PBR Renderer](https://github.com/460xlin/Vulkan_Hybrid_PBR/)
+  * [GPU Rasterized And Ray Traced Real Time Rendering Using WebGL](https://github.com/WanruZhao/CIS565-Final-Project)
+  * [Cloth Simulation in Flamenco Game Engine](https://github.com/vasumahesh1/Flamenco)
+* **Fall 2017**
+  * [Pollux: Metal Pathtracer](https://github.com/WilliamKHo/Pollux-Renderer) by Youssef Victor and Will Ho
+  * [Organic Mesh Growth with SDFs](https://github.com/mmerchante/organic-mesh-growth) by Mariano Merchante and Mohamad Moneimne
+  * [BabylonJS Post-Processing and Weather System](https://github.com/HanmingZhang/Babylon.js) by Hanming Zhang and Linshen Xiao
+* **Fall 2016**
+  * [Vulkan PBR Renderer](https://github.com/jian-ru/laugh_engine) by Jian Ru
+  * [Vulkan Forward+ Renderer](https://github.com/WindyDarian/Vulkan-Forward-Plus-Renderer) by Ruoyu Fan and Xueyin Wan
+  * [PIC/FLIP Fluid with WebGL](https://github.com/austinEng/WebGL-PIC-FLIP-Fluid) by Austin Eng
+* **Fall 2015**
+  * [Forward+ Renderer using OpenGL/Compute Shaders](https://github.com/bcrusco/Forward-Plus-Renderer) by Bradley Crusco and Megan Moore
+  * [WebGL Fragment Shader Profiler](https://github.com/terrynsun/WebGL-Fragment-Shader-Profiler) by Sally Kong and Terry Sun
+  * [GPU Cloth with OpenGL Compute Shaders](https://github.com/likangning93/GPU_cloth) by Gary Li
+* **Fall 2014**
+  * [Bidirectional Path Tracer in CUDA](https://github.com/paula18/Photon-Mapping) by Paula Huelin Merino and Robbie Cassidy
+  * [GPU-Accelerated Dynamic Fracture in the Browser with WebCL](https://github.com/kainino0x/cis565final) by Kai Ninomiya and Jiatong He
+  * [Uniform grid and kd-tree in CUDA](https://github.com/jeremynewlin/Accel) by Jeremy Newlin and Danny Rerucha
+* **Fall 2013**
+  * [Surface Mesh Reconstruction from RGBD Images](https://github.com/cboots/RGBD-to-Mesh) by Collin Boots and Dalton Banks
+  * [Sparse Voxel Octree](https://github.com/otaku690/SparseVoxelOctree) by Cheng-Tso Lin
+  * [Terrain tessellation](https://github.com/mchen15/Gaia) by Mikey Chen and Vimanyu Jain
+  * [GPU Photon Mapper](https://github.com/ishaan13/PhotonMapper) by Ishaan Singh, Yingting Xiao, and Xiaoyan Zhu
+* **Fall 2012**
+  * [Non-photorealistic Rendering](http://gpuprojects.blogspot.com/) by Kong Ma
+  * [Procedural Terrain](http://gputerrain.blogspot.com/) by Tiju Thomas
+  * [KD Trees on the GPU](http://www.colorseffectscode.com/Projects/FinalProject.html) by Zakiuddin Shehzan Mohammed
+* **Spring 2012**
+  * [Single Pass Order Independent Transparency](http://gamerendering.blogspot.com/) by Sean Lilley
+  * [GPU-Accelerated Logo Detection](http://erickboke.blogspot.com/) by Yu Luo
+  * [GPU-Accelerated Simplified General Perturbation No. 4 (SGP4) Model](http://www.matthewahn.com/blog/sgp4-14558-satellites-in-orbit/) by Matthew Ahn
+* **Spring 2011**
+  * [Fast Pedestrian Recognition on the GPU](http://spevis.blogspot.com/) by Fan Deng
+  * [Screen Space Fluid Rendering](http://fastfluids.blogspot.com/) by Terry Kaleas
+  * [Deferred Shader with Screen Space Classification](http://smt565.blogspot.com/) by Sean Thomas
+
+## Conferences and Journals
+
+Browse these for ideas galore!
+
+* [Journal of Computer Graphics Techniques](http://jcgt.org/read.html)
+* [Advances in Real-Time Rendering](http://advances.realtimerendering.com/) SIGGRAPH courses
+* [Ke-Sen Huang's conference pages](http://kesen.realtimerendering.com/) - papers from SIGGRAPH, Eurographics, I3D, and elsewhere
+* [Real-Time Rendering Portal](http://www.realtimerendering.com/portal.html) and [WebGL Resources](http://www.realtimerendering.com/webgl.html) - links to an amazing amount of content
+
+Also look at the course website for more resources.
