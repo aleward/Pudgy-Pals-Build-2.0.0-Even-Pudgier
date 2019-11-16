@@ -8,7 +8,6 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 
-
 class Creature
 {
 public:
