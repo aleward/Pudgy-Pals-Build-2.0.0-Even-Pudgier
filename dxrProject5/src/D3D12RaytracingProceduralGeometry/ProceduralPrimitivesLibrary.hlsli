@@ -15,7 +15,7 @@
 // AABB local space dimensions: <-1,1>.
 bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum analyticPrimitive, out float thit, out ProceduralPrimitiveAttributes attr)
 {
-    float3 aabb[2] = {
+    /*float3 aabb[2] = {
         float3(-1,-1,-1),
         float3(1,1,1)
     };
@@ -25,16 +25,18 @@ bool RayAnalyticGeometryIntersectionTest(in Ray ray, in AnalyticPrimitive::Enum 
     case AnalyticPrimitive::AABB: return RayAABBIntersectionTest(ray, aabb, thit, attr);
     case AnalyticPrimitive::Spheres: return RayMultipleSpheresIntersectionTest(ray, thit, attr);
     default: return false;
-    }
+    }*/
+    return false;
 }
 
 // LOOKAT-3.4.2: Analytic geometry intersection test.
 // AABB local space dimensions: <-1,1>.
-bool RayVolumetricGeometryIntersectionTest(in Ray ray, in VolumetricPrimitive::Enum volumetricPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime)
+bool RayVolumetricGeometryIntersectionTest(in Ray ray, in VolumetricPrimitive::Enum volumetricPrimitive, out float thit, out ProceduralPrimitiveAttributes attr, in float elapsedTime,
+    in float3 positions[N_METABALLS], in float radii[N_METABALLS], in int numBalls)
 {
     switch (volumetricPrimitive)
     {
-    case VolumetricPrimitive::Metaballs: return RayMetaballsIntersectionTest(ray, thit, attr, elapsedTime);
+    case VolumetricPrimitive::Metaballs: return RayMetaballsIntersectionTest(ray, thit, attr, elapsedTime, positions, radii, numBalls);
     default: return false;
     }
 }

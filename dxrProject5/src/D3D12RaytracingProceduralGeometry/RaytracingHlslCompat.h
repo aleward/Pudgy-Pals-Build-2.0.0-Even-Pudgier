@@ -24,7 +24,7 @@ typedef UINT16 Index;
 #endif
 
 // Number of metaballs to use within an AABB. Limit to 3 unless you are attempting the dynamic looping extra-credit.
-#define N_METABALLS 3
+#define N_METABALLS 20
 
 #define N_FRACTAL_ITERATIONS 5      // = <1,...>
 
@@ -98,9 +98,7 @@ namespace TraceRayParameters
 // AABB or Sphere
 namespace AnalyticPrimitive {
 	enum Enum {
-		AABB = 0,
-		Spheres,
-		Count
+		Count = 0
 	};
 }
 
@@ -140,6 +138,9 @@ struct PrimitiveInstancePerFrameBuffer
 {
     XMMATRIX localSpaceToBottomLevelAS;   // Matrix from local primitive space to bottom-level object space.
     XMMATRIX bottomLevelASToLocalSpace;   // Matrix from bottom-level object space to local primitive space.
+    XMFLOAT3 ballPositions[N_METABALLS];
+    float ballRadii[N_METABALLS];
+    int numBalls;
 };
 
 #endif // RAYTRACINGHLSLCOMPAT_H

@@ -370,13 +370,20 @@ void MyIntersectionShader_VolumetricPrimitive()
 {
     Ray localRay = GetRayInAABBPrimitiveLocalSpace();
     VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
+    PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+
+    float3 positions[N_METABALLS];
+    float radii[N_METABALLS];
+    for (int i = 0; i < N_METABALLS; i++)
+    {
+        positions[i] = (float3) aabbAttribute.ballPositions[i];
+        radii[i] = aabbAttribute.ballRadii[i];
+    }
 
     float thit;
     ProceduralPrimitiveAttributes attr;
-    if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime))
+    if (RayVolumetricGeometryIntersectionTest(localRay, primitiveType, thit, attr, g_sceneCB.elapsedTime, positions, radii, aabbAttribute.numBalls))
     {
-        PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
-
         // Make sure the normals are stored in BLAS space and not the local space
         attr.normal = mul(attr.normal, (float3x3) aabbAttribute.localSpaceToBottomLevelAS);
         attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
