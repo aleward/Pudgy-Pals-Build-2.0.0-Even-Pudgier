@@ -22,6 +22,12 @@
     <Filter Include="Assets\Shaders\ProceduralPrimitives">
       <UniqueIdentifier>{69efd3aa-04fd-4b1e-be35-61217582c550}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CreatureGen">
+      <UniqueIdentifier>{66c4e995-66c0-4155-b2ac-4feaa7b339da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CreatureGen">
+      <UniqueIdentifier>{7872fa7b-009e-43ca-8e7d-8a893c67c14e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -71,6 +77,21 @@
     </ClInclude>
     <ClInclude Include="DirectXRaytracingHelper.h">
       <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Creature.h">
+      <Filter>Header Files\CreatureGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Head.h">
+      <Filter>Header Files\CreatureGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Limb.h">
+      <Filter>Header Files\CreatureGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Spine.h">
+      <Filter>Header Files\CreatureGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Appendages.h">
+      <Filter>Header Files\CreatureGen</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -131,9 +152,39 @@
     <ClCompile Include="DXR-AccelerationStructure.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Creature.cpp">
+      <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
+    <ClCompile Include="Head.cpp">
+      <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
+    <ClCompile Include="Limb.cpp">
+      <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
+    <ClCompile Include="Spine.cpp">
+      <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
+    <ClCompile Include="Appendages.cpp">
+      <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Head.ts">
+      <Filter>Source Files\CreatureGen</Filter>
+    </None>
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Limb.ts">
+      <Filter>Source Files\CreatureGen</Filter>
+    </None>
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Spine.ts">
+      <Filter>Source Files\CreatureGen</Filter>
+    </None>
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Creature.ts">
+      <Filter>Source Files\CreatureGen</Filter>
+    </None>
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Appendage.ts">
+      <Filter>Source Files\CreatureGen</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Raytracing.hlsl">

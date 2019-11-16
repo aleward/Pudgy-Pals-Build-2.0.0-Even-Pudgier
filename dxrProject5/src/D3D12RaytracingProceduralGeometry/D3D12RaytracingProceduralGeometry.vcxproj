@@ -169,13 +169,18 @@ PrebuildCheck.bat</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnalyticPrimitives.hlsli" />
+    <ClInclude Include="Appendages.h" />
+    <ClInclude Include="Creature.h" />
     <ClInclude Include="DirectXRaytracingHelper.h" />
     <ClInclude Include="DXR-Structs.h" />
+    <ClInclude Include="Head.h" />
+    <ClInclude Include="Limb.h" />
     <ClInclude Include="ProceduralPrimitivesLibrary.hlsli" />
     <ClInclude Include="RaytracingSceneDefines.h" />
     <ClInclude Include="RaytracingHlslCompat.h" />
     <ClInclude Include="RaytracingShaderHelper.hlsli" />
     <ClInclude Include="DXProceduralProject.h" />
+    <ClInclude Include="Spine.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="util\DeviceResources.h" />
     <ClInclude Include="util\DXProject.h" />
@@ -186,6 +191,8 @@ PrebuildCheck.bat</Command>
     <ClInclude Include="VolumetricPrimitives.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Appendages.cpp" />
+    <ClCompile Include="Creature.cpp" />
     <ClCompile Include="DXR-Other.cpp" />
     <ClCompile Include="DXR-AccelerationStructure.cpp" />
     <ClCompile Include="DXR-AppLifeCyclecpp.cpp" />
@@ -198,8 +205,11 @@ PrebuildCheck.bat</Command>
     <ClCompile Include="DXR-Pipeline.cpp" />
     <ClCompile Include="DXR-RootSignature.cpp" />
     <ClCompile Include="DXR-ShaderTable.cpp" />
+    <ClCompile Include="Head.cpp" />
+    <ClCompile Include="Limb.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="DXR-ShaderNames.cpp" />
+    <ClCompile Include="Spine.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -224,6 +234,11 @@ PrebuildCheck.bat</Command>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Appendage.ts" />
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Creature.ts" />
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Head.ts" />
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Limb.ts" />
+    <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Spine.ts" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
