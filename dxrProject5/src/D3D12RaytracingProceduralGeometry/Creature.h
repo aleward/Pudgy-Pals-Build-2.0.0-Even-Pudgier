@@ -11,22 +11,23 @@
 class Creature
 {
 public:
-	Spine spine;
-	std::vector<float> spineLocations;
-	Head head;
-	Limb *limbs;
-	std::vector<float> jointLocations;
-	std::vector<float> jointRadii;
-	std::vector<float> limbLengths;
-	Appendages appendages;
-	int texture1;
-	int texture2;
-	XMFLOAT3 color1;
-	XMFLOAT3 color2;
-	XMFLOAT3 color3;
-	XMFLOAT3 color4;
+	Spine *spine;
+	std::vector<float> spineLocations;	// Send to shader
+	Head *head;	// Send headData to shader
+	std::vector<Limb> limbs;
+	std::vector<float> jointLocations;	// Send to shader
+	std::vector<float> jointRadii;	// Send to shader
+	std::vector<float> limbLengths;	// Send to shader
+	Appendages *appendages;	// Send appendageData to shader
+	int texture1;	// Send to shader
+	int texture2;	// Send to shader
+	XMFLOAT3 color1;	// Send to shader
+	XMFLOAT3 color2;	// Send to shader
+	XMFLOAT3 color3;	// Send to shader
+	XMFLOAT3 color4;	// Send to shader
 
 	Creature();
 	~Creature();
+	void generate(int numTextures, int numLimbSets, int headType);
 };
 
