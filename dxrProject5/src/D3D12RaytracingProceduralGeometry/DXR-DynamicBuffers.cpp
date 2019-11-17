@@ -39,20 +39,20 @@ void DXProceduralProject::InitializeScene()
 											purple.z * ChromiumReflectance.z,
 											1.0f);
 
-		UINT offset = 0;
+		/*UINT offset = 0;
 		// Analytic primitives.
 		{
 			using namespace AnalyticPrimitive;
 			SetAttributes(offset + AABB, yellow, 0.3f);
 			SetAttributes(offset + Spheres, chromium_purple, 0.8f);
 			offset += AnalyticPrimitive::Count;
-		}
+		}*/
 
 		// Volumetric primitives.
 		{
 			using namespace VolumetricPrimitive;
-			SetAttributes(offset + Metaballs, ChromiumReflectance, 1);
-			offset += VolumetricPrimitive::Count;
+			SetAttributes(Metaballs, ChromiumReflectance, 1);
+			//offset += VolumetricPrimitive::Count;
 		}
 	}
 
@@ -115,7 +115,7 @@ void DXProceduralProject::CreateAABBPrimitiveAttributesBuffers()
 	auto frameCount = m_deviceResources->GetBackBufferCount();
 
 	// second param is num_Elements, the number of aabbs stored in the buffer
-	m_aabbPrimitiveAttributeBuffer.Create(device, 3, frameCount, L"AABB Primitive Attribute Buffer");
+	m_aabbPrimitiveAttributeBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"AABB Primitive Attribute Buffer");
 }
 
 // LOOKAT-2.1: Update camera matrices stored in m_sceneCB.
@@ -147,9 +147,9 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mIdentity = XMMatrixIdentity();
 
 	// Different scale matrices
-	XMMATRIX mScale15y = XMMatrixScaling(1, 1.5, 1);
-	XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
-	XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
+	XMMATRIX mScale = XMMatrixScaling(1, 1, 1);
+	//XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
+	//XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
 
 	// Rotation matrix that changes over time
 	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
@@ -171,21 +171,29 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		XMMATRIX locToBLAS = mScale * mRotation * mTranslation;
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = locToBLAS;
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, locToBLAS);
+
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[0] = XMFLOAT3(-2, -2, -2);
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[1] = XMFLOAT3(1, 1, 1);
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[2] = XMFLOAT3(-1, -1, -1);
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[0] = 1;
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[1] = 2;
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[2] = 1;
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].numBalls = 3;
 	};
 
-	UINT offset = 0;
+	/*UINT offset = 0;
 	// Analytic primitives.
 	{
 		using namespace AnalyticPrimitive;
 		SetTransformForAABB(offset + AABB, mScale15y, mIdentity);
 		SetTransformForAABB(offset + Spheres, mScale15, mRotation);
 		offset += AnalyticPrimitive::Count;
-	}
+	}*/
 
 	// Volumetric primitives.
 	{
 		using namespace VolumetricPrimitive;
-		SetTransformForAABB(offset + Metaballs, mScale2, mRotation);
-		offset += VolumetricPrimitive::Count;
+		SetTransformForAABB(Metaballs, mScale, mIdentity);
+		//offset += VolumetricPrimitive::Count;
 	}
 }

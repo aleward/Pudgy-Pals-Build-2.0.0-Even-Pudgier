@@ -76,8 +76,8 @@ void Spine::generate() {
 		float prevRadius = 0;
 		if (j > 0) prevRadius = metaBallRadii[j - 1];
 		t += 1 / numMetaBalls;
-		XMFLOAT3 pos = getPosOnSpline(t);
-		XMFLOAT3 posNearby = getPosOnSpline(t + 0.05);
+		XMFLOAT3 pos = getPosOnSpline(t, splinePoints);
+		XMFLOAT3 posNearby = getPosOnSpline(t + 0.05, splinePoints);
 		XMVECTOR v0 = XMLoadFloat3(&pos);
 		XMVECTOR v1 = XMLoadFloat3(&posNearby);
 		XMVECTOR slope = XMVectorSubtract(v0, v1);

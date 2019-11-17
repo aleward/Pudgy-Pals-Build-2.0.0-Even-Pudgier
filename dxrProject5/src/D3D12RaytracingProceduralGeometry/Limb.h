@@ -1,6 +1,6 @@
 #pragma once
-#include "Creature.h"
 
+using namespace DirectX;
 class Limb
 {
 private:

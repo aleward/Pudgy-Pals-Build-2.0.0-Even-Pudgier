@@ -1,5 +1,4 @@
 #pragma once
-#include "Creature.h"
 
 class Head
 {
