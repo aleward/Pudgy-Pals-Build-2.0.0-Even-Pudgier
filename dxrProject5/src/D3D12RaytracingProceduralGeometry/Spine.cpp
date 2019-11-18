@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <random>
 #include "Spine.h"
 
 
@@ -14,7 +15,15 @@ Spine::~Spine()
 void randomizeSpline(std::vector<XMFLOAT3> *splinePoints) {
 	int numSplinePoints = 4;
 	for (int i = 0; i < numSplinePoints; i++) {
-		XMFLOAT3 newPoint = XMFLOAT3(0.5 * i + 0.3 * (std::rand() / RAND_MAX), 1. * (2 * (std::rand() / RAND_MAX) - 1), 0);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dist(0, 1);
+        float idiv = float(i) / float(numSplinePoints);
+        srand(i);
+        float x = 0.5 * idiv - 0.1 * dist(gen);
+        srand(6 * i);
+        float y = dist(gen)/10.0;
+		XMFLOAT3 newPoint = XMFLOAT3(x, y, 0);
 		splinePoints->push_back(newPoint);
 	}
 }
@@ -124,6 +133,7 @@ void Spine::generate() {
 	}
 
 	for (int j = 0; j < numMetaBalls; j++) {
-		metaBallPos.push_back(positions[j]);
+        XMFLOAT3 p = XMFLOAT3(float(j) / float(numMetaBalls), float(j) / float(numMetaBalls), 0);
+        metaBallPos.push_back(p);
 	}
 }

@@ -688,7 +688,7 @@ float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPI
     float spine = MAX_DIST;
     for (int i = 0; i < SPINE_LOC_COUNT; i += 3) {
         if (u_SpineLoc[i] == 0. && u_SpineLoc[i + 1] == 0. && u_SpineLoc[i + 2] == 0.) continue;
-        float3 pTemp = p + float3(u_SpineLoc[i] / 50.0f, u_SpineLoc[i + 1]/50.0f, u_SpineLoc[i + 2] / 50.0f);
+        float3 pTemp = p + float3(u_SpineLoc[i], u_SpineLoc[i + 1], u_SpineLoc[i + 2]);
         spine = smin(spine, sphereSDF(pTemp, u_SpineRad[i / 3]), 0.06);
     }
     return spine;
@@ -707,8 +707,9 @@ float sceneSDF(float3 p) {
     // p = p * rotateMatY(u_Time) ; // rotates creature
     //return sphereSDF(p, 1.0);
     //return bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    return spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData);
-    float headSDF = 0;
+    
+    float headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
+    return smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .15);
     if (u_Head[4] == 0.0) {
         headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }

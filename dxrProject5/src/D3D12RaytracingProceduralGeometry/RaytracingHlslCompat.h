@@ -38,7 +38,7 @@ static const float InShadowRadiance = 0.35f;
 static const int MAX_STEPS = 300;
 static const float MIN_DIST = 0.0001;
 static const float MAX_DIST = 100.0;
-static const float EPSILON = 0.002;
+static const float EPSILON = 0.01;
 
 static const int HEAD_COUNT = 5;
 static const int SPINE_LOC_COUNT = 24;

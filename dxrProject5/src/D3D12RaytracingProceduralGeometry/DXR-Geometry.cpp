@@ -63,7 +63,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
     {
         // 9x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
         // You could have a small sphere that takes up 1 slot, and another that is giant and takes up 4 slots.
-        XMINT3 aabbGrid = XMINT3(3, 1, 3);
+        XMINT3 aabbGrid = XMINT3(5, 0, 5);
 
         // The base position of the grid.
         // The formula used is: -((size of all slots in component) + (size of separation between slots in component)) / 2
