@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
+#include "Creature.h"
 
 // LOOKAT-2.1: Initialize scene rendering parameters.
 // This will fill in most constant and structured buffers (material properties, plane color, camera, lights)
@@ -147,7 +148,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mIdentity = XMMatrixIdentity();
 
 	// Different scale matrices
-	XMMATRIX mScale = XMMatrixScaling(1, 1, 1);
+	XMMATRIX mScale = XMMatrixScaling(5, 5, 5);
 	//XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
 	//XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
 
@@ -172,13 +173,13 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].localSpaceToBottomLevelAS = locToBLAS;
 		m_aabbPrimitiveAttributeBuffer[primitiveIndex].bottomLevelASToLocalSpace = XMMatrixInverse(nullptr, locToBLAS);
 
-        m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[0] = XMFLOAT3(-2, -2, -2);
+        /*m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[0] = XMFLOAT3(-2, -2, -2);
         m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[1] = XMFLOAT3(1, 1, 1);
         m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballPositions[2] = XMFLOAT3(-1, -1, -1);
         m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[0] = 1;
         m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[1] = 2;
         m_aabbPrimitiveAttributeBuffer[primitiveIndex].ballRadii[2] = 1;
-        m_aabbPrimitiveAttributeBuffer[primitiveIndex].numBalls = 3;
+        m_aabbPrimitiveAttributeBuffer[primitiveIndex].numBalls = 3;*/
 	};
 
 	/*UINT offset = 0;
@@ -196,4 +197,80 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 		SetTransformForAABB(Metaballs, mScale, mIdentity);
 		//offset += VolumetricPrimitive::Count;
 	}
+}
+
+void DXProceduralProject::CreateCreatureBuffers()
+{
+    auto device = m_deviceResources->GetD3DDevice();
+    auto frameCount = m_deviceResources->GetBackBufferCount();
+
+    // second param is num_Elements, the number of aabbs stored in the buffer
+    m_headSpineBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Head Spine Info Buffer");
+    m_appenBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Head Spine Info Buffer");
+    m_limbBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Head Spine Info Buffer");
+    m_rotBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Head Spine Info Buffer");
+}
+
+void DXProceduralProject::UpdateCreatureAttributes()
+{
+    auto SetCreatureBuffers = [&](UINT primitiveIndex)
+    {
+        Creature *creature = new Creature();
+        creature->generate(0, 3, 0);
+
+        for (int h = 0; h < min(HEAD_COUNT, creature->head->headData.size()); h++)
+        {
+            m_headSpineBuffer[primitiveIndex].headData[h] = creature->head->headData[h];
+        }
+        for (int sl = 0; sl < min(SPINE_LOC_COUNT, creature->spineLocations.size()); sl++)
+        {
+            m_headSpineBuffer[primitiveIndex].spineLocData[sl] = creature->spineLocations[sl];
+        }
+        for (int sr = 0; sr < min(SPINE_RAD_COUNT, creature->spine->metaBallRadii.size()); sr++)
+        {
+            m_headSpineBuffer[primitiveIndex].spineRadData[sr] = creature->spine->metaBallRadii[sr];
+        }
+
+        for (int a = 0; a < min(APPEN_COUNT, creature->appendages->appendageData.size()); a++)
+        {
+            m_appenBuffer[primitiveIndex].appenData[a] = creature->appendages->appendageData[a];
+            m_appenBuffer[primitiveIndex].appenBools[a] = 0;
+            m_appenBuffer[primitiveIndex].appenRads[a] = 1;
+            m_appenBuffer[primitiveIndex].appenRots[a] = XMMatrixIdentity();
+        }
+
+        for (int l = 0; l < min(LIMBLEN_COUNT, creature->limbLengths.size()); l++)
+        {
+            m_limbBuffer[primitiveIndex].limbLengths[l] = creature->limbLengths[l];
+        }
+        for (int jl = 0; jl < min(JOINT_LOC_COUNT, creature->jointLocations.size()); jl++)
+        {
+            m_limbBuffer[primitiveIndex].jointLocData[jl] = creature->jointLocations[jl];
+        }
+        for (int jr = 0; jr < min(JOINT_RAD_COUNT, creature->jointRadii.size()); jr++)
+        {
+            m_limbBuffer[primitiveIndex].jointRadData[jr] = creature->jointRadii[jr];
+        }
+
+        for (int r = 0; r < ROT_COUNT; r++)
+        {
+            m_rotBuffer[primitiveIndex].rotations[r] = XMMatrixIdentity();
+        }
+    };
+
+    /*UINT offset = 0;
+    // Analytic primitives.
+    {
+        using namespace AnalyticPrimitive;
+        SetTransformForAABB(offset + AABB, mScale15y, mIdentity);
+        SetTransformForAABB(offset + Spheres, mScale15, mRotation);
+        offset += AnalyticPrimitive::Count;
+    }*/
+
+    // Volumetric primitives.
+    {
+        using namespace VolumetricPrimitive;
+        SetCreatureBuffers(Metaballs);
+        //offset += VolumetricPrimitive::Count;
+    }
 }

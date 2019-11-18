@@ -75,6 +75,11 @@ private:
     StructuredBuffer<PrimitiveInstancePerFrameBuffer> m_aabbPrimitiveAttributeBuffer; // holds multiple primitives
     std::vector<D3D12_RAYTRACING_AABB> m_aabbs; // holds 1 AABB per procedural object (e.g 1 for metaballs, 1 for a sphere, etc..)
 
+    StructuredBuffer<HeadSpineInfoBuffer> m_headSpineBuffer;
+    StructuredBuffer<AppendageInfoBuffer> m_appenBuffer;
+    StructuredBuffer<LimbInfoBuffer> m_limbBuffer;
+    StructuredBuffer<RotationInfoBuffer> m_rotBuffer;
+
     // Local root constant buffers
     PrimitiveConstantBuffer m_planeMaterialCB;
     PrimitiveConstantBuffer m_aabbMaterialCB[IntersectionShaderType::TotalPrimitiveCount];
@@ -130,8 +135,10 @@ private:
 	void InitializeScene();
 	void CreateConstantBuffers();
 	void CreateAABBPrimitiveAttributesBuffers();
+    void CreateCreatureBuffers();
 	void UpdateCameraMatrices();
 	void UpdateAABBPrimitiveAttributes(float animationTime);
+    void UpdateCreatureAttributes();
 
 	// DXR-RootSignature.cpp
 	void CreateRootSignatures();

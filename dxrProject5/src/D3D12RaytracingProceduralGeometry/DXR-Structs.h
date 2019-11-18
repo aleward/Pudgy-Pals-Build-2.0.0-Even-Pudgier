@@ -127,7 +127,7 @@ class StructuredBuffer : public GpuUploadBuffer
 
 public:
 	// Performance tip: Align structures on sizeof(float4) boundary.
-	static_assert(sizeof(T) % 16 == 0, L"Align structure buffers on 16 byte boundary for performance reasons.");
+	//static_assert(sizeof(T) % 16 == 0, L"Align structure buffers on 16 byte boundary for performance reasons.");
 
 	StructuredBuffer() : m_mappedBuffers(nullptr), m_numInstances(0) {}
 

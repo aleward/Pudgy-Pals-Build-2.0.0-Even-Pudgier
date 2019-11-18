@@ -25,6 +25,15 @@ void DXProceduralProject::DoRaytracing()
 	m_aabbPrimitiveAttributeBuffer.CopyStagingToGpu(frameIndex);
 	commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AABBattributeBuffer, m_aabbPrimitiveAttributeBuffer.GpuVirtualAddress(frameIndex));
 
+    m_headSpineBuffer.CopyStagingToGpu(frameIndex);
+    commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::HeadSpineBuffer, m_headSpineBuffer.GpuVirtualAddress(frameIndex));
+    m_appenBuffer.CopyStagingToGpu(frameIndex);
+    commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::AppendageBuffer, m_appenBuffer.GpuVirtualAddress(frameIndex));
+    m_limbBuffer.CopyStagingToGpu(frameIndex);
+    commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::LimbBuffer, m_limbBuffer.GpuVirtualAddress(frameIndex));
+    m_rotBuffer.CopyStagingToGpu(frameIndex);
+    commandList->SetComputeRootShaderResourceView(GlobalRootSignature::Slot::RotBuffer, m_rotBuffer.GpuVirtualAddress(frameIndex));
+
 	// Bind the descriptor heaps.
 	if (m_raytracingAPI == RaytracingAPI::FallbackLayer)
 	{

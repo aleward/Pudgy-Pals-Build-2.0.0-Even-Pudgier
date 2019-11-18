@@ -9,12 +9,12 @@
 //			structs are used.
 
 #ifdef HLSL
-	typedef float2 XMFLOAT2;
-	typedef float3 XMFLOAT3;
-	typedef float4 XMFLOAT4;
-	typedef float4 XMVECTOR;
-	typedef float4x4 XMMATRIX;
-	typedef uint UINT;
+typedef float2 XMFLOAT2;
+typedef float3 XMFLOAT3;
+typedef float4 XMFLOAT4;
+typedef float4 XMVECTOR;
+typedef float4x4 XMMATRIX;
+typedef uint UINT;
 #else
 
 using namespace DirectX;
@@ -31,83 +31,97 @@ typedef UINT16 Index;
 #define MAX_RAY_RECURSION_DEPTH 3    // ~ primary rays + reflections + shadow rays from reflected geometry.
 
 /**************** Scene *****************/
-static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(0.549f, 0.556f, 0.554f, 1.0f);
+static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(1.0f, 0.556f, 0.554f, 1.0f);
 static const XMFLOAT4 BackgroundColor = XMFLOAT4(0.8f, 0.9f, 1.0f, 1.0f);
 static const float InShadowRadiance = 0.35f;
 
+static const int MAX_STEPS = 300;
+static const float MIN_DIST = 0.0001;
+static const float MAX_DIST = 100.0;
+static const float EPSILON = 0.002;
+
+static const int HEAD_COUNT = 5;
+static const int SPINE_LOC_COUNT = 24;
+static const int SPINE_RAD_COUNT = 8;
+static const int APPEN_COUNT = 50;
+static const int LIMBLEN_COUNT = 8;
+static const int JOINT_LOC_COUNT = 90;
+static const int JOINT_RAD_COUNT = 30;
+static const int ROT_COUNT = 100;
+
 // Ray types traced in this project.
 namespace RayType {
-	enum Enum {
-		Radiance = 0,   // ~ Primary, reflected camera/view rays calculating color for each hit.
-		Shadow,         // ~ Shadow/visibility rays, only testing for occlusion
-		Count
-	};
+    enum Enum {
+        Radiance = 0,   // ~ Primary, reflected camera/view rays calculating color for each hit.
+        Shadow,         // ~ Shadow/visibility rays, only testing for occlusion
+        Count
+    };
 }
 
 struct RayPayload
 {
-	XMFLOAT4 color;
-	UINT   recursionDepth;
+    XMFLOAT4 color;
+    UINT   recursionDepth;
 };
 
 struct ShadowRayPayload
 {
-	bool hit;
+    bool hit;
 };
 
 struct Vertex
 {
-	XMFLOAT3 position;
-	XMFLOAT3 normal;
+    XMFLOAT3 position;
+    XMFLOAT3 normal;
 };
 
 // Really this isn't a `constant` buffer, as in the contents may change but the buffer itself isn't dynamic.
 struct SceneConstantBuffer
 {
-	XMMATRIX projectionToWorld;
-	XMVECTOR cameraPosition;
-	XMVECTOR lightPosition;
-	XMVECTOR lightAmbientColor;
-	XMVECTOR lightDiffuseColor;
-	float    reflectance;
-	float    elapsedTime;                 // Elapsed application time.
+    XMMATRIX projectionToWorld;
+    XMVECTOR cameraPosition;
+    XMVECTOR lightPosition;
+    XMVECTOR lightAmbientColor;
+    XMVECTOR lightDiffuseColor;
+    float    reflectance;
+    float    elapsedTime;                 // Elapsed application time.
 };
 
 // Use this namespace to fill your TraceRay() functions.
 namespace TraceRayParameters
 {
-	static const UINT InstanceMask = ~0;   // Everything is visible.
-	namespace HitGroup {
-		static const UINT Offset[RayType::Count] =
-		{
-			0, // Radiance ray
-			1  // Shadow ray
-		};
-		static const UINT GeometryStride = RayType::Count;
-	}
-	namespace MissShader {
-		static const UINT Offset[RayType::Count] =
-		{
-			0, // Radiance ray
-			1  // Shadow ray
-		};
-	}
+    static const UINT InstanceMask = ~0;   // Everything is visible.
+    namespace HitGroup {
+        static const UINT Offset[RayType::Count] =
+        {
+            0, // Radiance ray
+            1  // Shadow ray
+        };
+        static const UINT GeometryStride = RayType::Count;
+    }
+    namespace MissShader {
+        static const UINT Offset[RayType::Count] =
+        {
+            0, // Radiance ray
+            1  // Shadow ray
+        };
+    }
 }
 
 /**************** Primitives *****************/
 // AABB or Sphere
 namespace AnalyticPrimitive {
-	enum Enum {
-		Count = 0
-	};
+    enum Enum {
+        Count = 0
+    };
 }
 
 // Metaballs
 namespace VolumetricPrimitive {
-	enum Enum {
-		Metaballs = 0,
-		Count
-	};
+    enum Enum {
+        Metaballs = 0,
+        Count
+    };
 }
 
 // Attributes to be interpolated per primitive. This is just the normal.
@@ -129,7 +143,7 @@ struct PrimitiveConstantBuffer
 // Attributes per primitive instance. An instance primitive actually exists in the scene and may be dynamic.
 struct PrimitiveInstanceConstantBuffer
 {
-    UINT instanceIndex;  
+    UINT instanceIndex;
     UINT primitiveType; // Procedural primitive type
 };
 
@@ -138,9 +152,36 @@ struct PrimitiveInstancePerFrameBuffer
 {
     XMMATRIX localSpaceToBottomLevelAS;   // Matrix from local primitive space to bottom-level object space.
     XMMATRIX bottomLevelASToLocalSpace;   // Matrix from bottom-level object space to local primitive space.
-    XMFLOAT3 ballPositions[N_METABALLS];
+    /*XMFLOAT3 ballPositions[N_METABALLS];
     float ballRadii[N_METABALLS];
-    int numBalls;
+    int numBalls;*/
+};
+
+struct AppendageInfoBuffer
+{
+    float appenData[APPEN_COUNT];
+    float appenBools[APPEN_COUNT];
+    float appenRads[APPEN_COUNT];
+    XMMATRIX appenRots[APPEN_COUNT];
+};
+
+struct LimbInfoBuffer
+{
+    float limbLengths[LIMBLEN_COUNT];
+    float jointLocData[JOINT_LOC_COUNT];
+    float jointRadData[JOINT_RAD_COUNT];
+};
+
+struct RotationInfoBuffer
+{
+    XMMATRIX rotations[ROT_COUNT];
+};
+
+struct HeadSpineInfoBuffer
+{
+    float headData[HEAD_COUNT];
+    float spineLocData[SPINE_LOC_COUNT];
+    float spineRadData[SPINE_RAD_COUNT];
 };
 
 #endif // RAYTRACINGHLSLCOMPAT_H

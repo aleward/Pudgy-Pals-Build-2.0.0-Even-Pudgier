@@ -81,6 +81,8 @@ void DXProceduralProject::CreateDeviceDependentResources()
     // Create AABB primitive attribute buffers.
     CreateAABBPrimitiveAttributesBuffers();
 
+    CreateCreatureBuffers();
+
     // Build shader tables, which define shaders and their local root arguments.
     BuildShaderTables();
 
@@ -277,6 +279,10 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_descriptorsAllocated = 0;
     m_sceneCB.Release();
     m_aabbPrimitiveAttributeBuffer.Release();
+    m_headSpineBuffer.Release();
+    m_appenBuffer.Release();
+    m_limbBuffer.Release();
+    m_rotBuffer.Release();
     m_indexBuffer.resource.Reset();
     m_vertexBuffer.resource.Reset();
     m_aabbBuffer.resource.Reset();

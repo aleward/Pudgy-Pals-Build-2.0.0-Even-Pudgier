@@ -13,6 +13,10 @@ namespace GlobalRootSignature {
             AccelerationStructure,
             SceneConstant,
             AABBattributeBuffer,
+            HeadSpineBuffer,
+            AppendageBuffer,
+            LimbBuffer,
+            RotBuffer,
             VertexBuffers,
             Count
         };
