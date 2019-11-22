@@ -14,15 +14,13 @@ Spine::~Spine()
 
 void randomizeSpline(std::vector<XMFLOAT3> *splinePoints) {
 	int numSplinePoints = 4;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dist(0, 1);
 	for (int i = 0; i < numSplinePoints; i++) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<float> dist(0, 1);
         float idiv = float(i) / float(numSplinePoints);
-        srand(i);
-        float x = 0.5 * idiv - 0.1 * dist(gen);
-        srand(6 * i);
-        float y = dist(gen)/10.0;
+        float x = (3.0 * (idiv - 0.5)) + 0.3 * (2.0 * (dist(gen) - 0.5));
+        float y = -2.0 * dist(gen)+1.0;
 		XMFLOAT3 newPoint = XMFLOAT3(x, y, 0);
 		splinePoints->push_back(newPoint);
 	}
@@ -62,6 +60,13 @@ XMFLOAT3 getPosOnSpline(float t, std::vector<XMFLOAT3> splinePoints) {
 }
 
 void Spine::generate() {
+	/*std::vector<XMFLOAT3> pts;
+	pts.push_back(XMFLOAT3(0, 0, 0));
+	pts.push_back(XMFLOAT3(1, 1, 0));
+	pts.push_back(XMFLOAT3(2, 2, 0));
+	pts.push_back(XMFLOAT3(3, 3, 0));
+	getPosOnSpline(0.5, pts);*/
+	
 	splinePoints = std::vector<XMFLOAT3>();
 	metaBallPos = std::vector<XMFLOAT3>();
 	metaBallRadii = std::vector<float>();
@@ -70,14 +75,14 @@ void Spine::generate() {
 
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dist(0, 1);
+	std::uniform_real_distribution<float> distrib(0, 1);
 
 
-	float radius = ((maxSpineRadius - minSpineRadius) * std::pow(dist(gen), 1.2) + minSpineRadius);  //pow to bias smaller radii
+	float radius = ((maxSpineRadius - minSpineRadius) * std::pow(distrib(gen), 1.2) + minSpineRadius);  //pow to bias smaller radii
 	for (int i = 0; i < numMetaBalls; i++) {
 		// radius = 0.2;
 		metaBallRadii.push_back(radius);
-		radius += 0.1 * (2 * std::pow(dist(gen), 1.2) - 1); //pow to bias shrinking over length
+		radius += 0.1 * (2 * std::pow(distrib(gen), 1.2) - 1); //pow to bias shrinking over length
 		if (radius < minSpineRadius) radius = minSpineRadius;
 		if (radius > maxSpineRadius) radius = maxSpineRadius;
 	}
@@ -89,7 +94,7 @@ void Spine::generate() {
 		float radius = metaBallRadii[j] / 0.4;
 		float prevRadius = 0;
 		if (j > 0) prevRadius = metaBallRadii[j - 1];
-		t += 1 / numMetaBalls;
+		t += 1.0 / float(numMetaBalls);
 		XMFLOAT3 pos = getPosOnSpline(t, splinePoints);
 		XMFLOAT3 posNearby = getPosOnSpline(t + 0.05, splinePoints);
 		XMVECTOR v0 = XMLoadFloat3(&pos);
@@ -127,7 +132,7 @@ void Spine::generate() {
 	}
 	XMVectorScale(averagePos, 1.f / numMetaBalls);
 
-	float creatureHeight = std::rand() / RAND_MAX * 1.5 + 0.5;
+	float creatureHeight = 0;// distrib(gen) * 1.5 + 0.5;
 
 	for (int j = 0; j < numMetaBalls; j++) {
 		XMVECTOR p = XMLoadFloat3(&positions[j]);
@@ -137,8 +142,11 @@ void Spine::generate() {
 		XMStoreFloat3(&positions[j], p);
 	}
 
+	float xAvg = (positions[3].x + positions[4].x) / 2.0;
+	float yAvg = (positions[3].y + positions[4].y) / 2.0;
 	for (int j = 0; j < numMetaBalls; j++) {
-        XMFLOAT3 p = XMFLOAT3(float(j) / float(numMetaBalls), float(j) / float(numMetaBalls), 0);
+        //XMFLOAT3 p = XMFLOAT3(float(j) / float(numMetaBalls), float(j) / float(numMetaBalls), 0);
+		XMFLOAT3 p = XMFLOAT3(positions[j].x - xAvg, positions[j].y - yAvg, 0);
         //metaBallPos.push_back(positions[j]);
 		metaBallPos.push_back(p);
 	}

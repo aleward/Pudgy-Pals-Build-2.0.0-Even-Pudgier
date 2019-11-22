@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Head.h"
+#include <random>
 
 
 Head::Head()
@@ -39,7 +40,10 @@ void Head::generate(std::vector<float> spinePos, std::vector<float> spineRadii, 
 	headData.push_back(avg);
 
 	if (type == -1) {
-		float rand = std::rand() / RAND_MAX;
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> distrib(0, 1);
+		float rand = distrib(gen);
 		if (rand < .33) {
 			headData.push_back(0.0);
 		}

@@ -697,7 +697,7 @@ float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPI
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
     HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-    //AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+    AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
     //LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
     //RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
 
@@ -706,21 +706,20 @@ float sceneSDF(float3 p) {
     p += float3(0, 0, 0);
     // p = p * rotateMatY(u_Time) ; // rotates creature
     //return sphereSDF(p, 1.0);
-    //return trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    
-    float headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    return smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .15);
-    if (u_Head[4] == 0.0) {
+    //return dinoHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
+	float headSDF = 0;
+    if (u_Head[4] == 0) {
         headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    else if (u_Head[4] == 1.0) {
+    else if (u_Head[4] == 1) {
         headSDF = dinoHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    else if (u_Head[4] == 2.0) {
+    else if (u_Head[4] == 2) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    //float dist = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-    return headSDF;//smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
+    float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
+	//float plusArm = smin(appendagesSDF(p, appenAttr.appenData, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots), headSpine, .1);
+    return headSpine;//smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
         //appendagesSDF(p, appenAttr.appenData, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots), .2), dist, .1);
 
     //return min(handSDF(p+ float3(-1.0,0.0,0.0), u_AppenRad[0]), clawFootSDF(p + float3(1.0,0.0,0.0), u_AppenRad[0]));

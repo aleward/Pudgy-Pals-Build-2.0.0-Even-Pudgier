@@ -63,7 +63,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
     {
         // 9x3 slots = 9 slots. Note that one procedural geometry can take up multiple slots.
         // You could have a small sphere that takes up 1 slot, and another that is giant and takes up 4 slots.
-        XMINT3 aabbGrid = XMINT3(5, 0, 5);
+        XMINT3 aabbGrid = XMINT3(0, 0, 0);
 
         // The base position of the grid.
         // The formula used is: -((size of all slots in component) + (size of separation between slots in component)) / 2
@@ -109,7 +109,7 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
         // Volumetric primitives.
         {
             using namespace VolumetricPrimitive;
-            m_aabbs[Metaballs] = InitializeAABB(XMINT3(0, 0, 0), XMFLOAT3(10, 10, 10));
+            m_aabbs[Metaballs] = InitializeAABB(XMINT3(0, 0, 0), XMFLOAT3(20, 20, 20));
             //offset += VolumetricPrimitive::Count;
         }
 

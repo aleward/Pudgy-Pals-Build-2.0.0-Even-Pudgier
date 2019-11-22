@@ -60,15 +60,15 @@ void DXProceduralProject::InitializeScene()
 	// Setup camera.
 	{
 		// Initialize the view and projection inverse matrices.
-		m_eye = { 0.0f, 5.3f, -17.0f, 1.0f };
-		m_at = { 0.0f, 5.0f, 0.0f, 1.0f };
+		m_eye = { -10.0f, 10.0f, -25.0f, 1.0f };
+		m_at = { 10.0f, 10.0f, 10.0f, 1.0f };
 		XMVECTOR right = { 1.0f, 0.0f, 0.0f, 0.0f };
 
 		XMVECTOR direction = XMVector4Normalize(m_at - m_eye);
 		m_up = XMVector3Normalize(XMVector3Cross(direction, right));
 
 		// Rotate camera around Y axis.
-		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(45.0f));
+		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(-90.0f));
 		m_eye = XMVector3Transform(m_eye, rotate);
 		m_up = XMVector3Transform(m_up, rotate);
 
@@ -148,12 +148,12 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mIdentity = XMMatrixIdentity();
 
 	// Different scale matrices
-	XMMATRIX mScale = XMMatrixScaling(5, 5, 5);
+	XMMATRIX mScale = XMMatrixScaling(6, 6, 6);
 	//XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
 	//XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
 
 	// Rotation matrix that changes over time
-	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
+	XMMATRIX mRotation = XMMatrixRotationY(XMConvertToRadians(0.0f));
 
 	
 	auto SetTransformForAABB = [&](UINT primitiveIndex, XMMATRIX& mScale, XMMATRIX& mRotation)
@@ -216,7 +216,7 @@ void DXProceduralProject::UpdateCreatureAttributes()
     auto SetCreatureBuffers = [&](UINT primitiveIndex)
     {
         Creature *creature = new Creature();
-        creature->generate(0, 3, 0);
+        creature->generate(0, 3, -1);
 
         for (int h = 0; h < min(HEAD_COUNT, creature->head->headData.size()); h++)
         {
