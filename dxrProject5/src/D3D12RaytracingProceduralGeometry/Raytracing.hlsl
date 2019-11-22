@@ -706,7 +706,7 @@ float sceneSDF(float3 p) {
     p += float3(0, 0, 0);
     // p = p * rotateMatY(u_Time) ; // rotates creature
     //return sphereSDF(p, 1.0);
-    //return bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
+    //return trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     
     float headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     return smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .15);

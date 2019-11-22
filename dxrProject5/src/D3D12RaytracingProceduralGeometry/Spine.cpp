@@ -68,11 +68,16 @@ void Spine::generate() {
 
 	int numMetaBalls = 8;
 
-	float radius = ((maxSpineRadius - minSpineRadius) * std::pow(std::rand() / RAND_MAX, 1.2) + minSpineRadius);  //pow to bias smaller radii
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dist(0, 1);
+
+
+	float radius = ((maxSpineRadius - minSpineRadius) * std::pow(dist(gen), 1.2) + minSpineRadius);  //pow to bias smaller radii
 	for (int i = 0; i < numMetaBalls; i++) {
 		// radius = 0.2;
 		metaBallRadii.push_back(radius);
-		radius += 0.1 * (2 * std::pow(std::rand() / RAND_MAX, 1.2) - 1); //pow to bias shrinking over length
+		radius += 0.1 * (2 * std::pow(dist(gen), 1.2) - 1); //pow to bias shrinking over length
 		if (radius < minSpineRadius) radius = minSpineRadius;
 		if (radius > maxSpineRadius) radius = maxSpineRadius;
 	}
@@ -134,6 +139,7 @@ void Spine::generate() {
 
 	for (int j = 0; j < numMetaBalls; j++) {
         XMFLOAT3 p = XMFLOAT3(float(j) / float(numMetaBalls), float(j) / float(numMetaBalls), 0);
-        metaBallPos.push_back(p);
+        //metaBallPos.push_back(positions[j]);
+		metaBallPos.push_back(p);
 	}
 }
