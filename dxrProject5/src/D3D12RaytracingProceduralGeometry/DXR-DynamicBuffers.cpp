@@ -148,7 +148,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	XMMATRIX mIdentity = XMMatrixIdentity();
 
 	// Different scale matrices
-	XMMATRIX mScale = XMMatrixScaling(5, 5, 5);
+	XMMATRIX mScale = XMMatrixScaling(6, 6, 6);
 	//XMMATRIX mScale15 = XMMatrixScaling(1.5, 1.5, 1.5);
 	//XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
 

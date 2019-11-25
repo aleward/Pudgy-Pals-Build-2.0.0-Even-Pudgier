@@ -706,7 +706,6 @@ float sceneSDF(float3 p) {
 
     p += float3(0, 0, 0);
     // p = p * rotateMatY(u_Time) ; // rotates creature
-    //return 0;
 	float headSDF = 0;
     if (u_Head[4] == 0) {
         headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
@@ -718,12 +717,8 @@ float sceneSDF(float3 p) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
     float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-    //float plusFeet = smin(appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots, limbAttr.jointLocData, limbAttr.limbLengths), headSpine, .1);
     return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
         appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
-    //return smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
-        //appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2);
-    //return min(handSDF(p+ float3(-1.0,0.0,0.0), u_AppenRad[0]), clawFootSDF(p + float3(1.0,0.0,0.0), u_AppenRad[0]));
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
