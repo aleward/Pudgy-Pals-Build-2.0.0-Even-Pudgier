@@ -185,6 +185,9 @@
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Appendage.ts">
       <Filter>Source Files\CreatureGen</Filter>
     </None>
+    <None Include="SDFShaderHelper.hlsli">
+      <Filter>Assets\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Raytracing.hlsl">

@@ -240,6 +240,7 @@ PrebuildCheck.bat</Command>
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Limb.ts" />
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Spine.ts" />
     <None Include="packages.config" />
+    <None Include="SDFShaderHelper.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\D3D12RaytracingFallback\src\FallbackLayer.vcxproj">
