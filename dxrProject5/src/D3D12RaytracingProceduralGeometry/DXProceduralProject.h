@@ -106,6 +106,8 @@ private:
     static const wchar_t* c_intersectionShaderNames[IntersectionShaderType::Count];
     static const wchar_t* c_closestHitShaderNames[GeometryType::Count];
     static const wchar_t* c_missShaderNames[RayType::Count];
+
+	static const wchar_t* c_computeShaderName;
 	
 	// Shader tables
     ComPtr<ID3D12Resource> m_missShaderTable; // points to the miss shader table resource
@@ -113,6 +115,7 @@ private:
     ComPtr<ID3D12Resource> m_hitGroupShaderTable; // points to the hit group shader table resource
     UINT m_hitGroupShaderTableStrideInBytes;
     ComPtr<ID3D12Resource> m_rayGenShaderTable; // points to the raygen shader table resource
+	ComPtr<ID3D12Resource> m_computeShaderTable;
 
     // Application state
     DX::GPUTimer m_gpuTimers[GpuTimers::Count];

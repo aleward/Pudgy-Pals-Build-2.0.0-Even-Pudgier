@@ -295,6 +295,7 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_rayGenShaderTable.Reset();
     m_missShaderTable.Reset();
     m_hitGroupShaderTable.Reset();
+	m_computeShaderTable.Reset();
 }
 
 // Recreate the d3 device if it ever gets lost.

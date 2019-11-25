@@ -459,4 +459,21 @@ void MyIntersectionShader_VolumetricPrimitive()
         ReportHit(thit, 0, attr);
     }
 }
+
+
+//***************************************************************************
+//********************------ Compute shader -------**************************
+//***************************************************************************
+[numthreads(8, 1, 1)]
+[shader("compute")]
+void MyComputeShader()
+{
+	/*Ray camRay = GenerateCameraRay(DispatchRaysIndex().xy, g_sceneCB.cameraPosition.xyz, g_sceneCB.projectionToWorld);
+	float4 col = TraceRadianceRay(camRay, 0);
+
+	// Write the color to the render target
+	g_renderTarget[DispatchRaysIndex().xy] = col;*/
+	int i = 0;
+}
+
 #endif // RAYTRACING_HLSL

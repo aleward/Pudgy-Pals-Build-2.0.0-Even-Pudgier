@@ -62,6 +62,7 @@ enum RootSignatureParameterOffset {
   HitGroupRecord = 0,
   MissShaderRecord,
   RayGenShaderRecord,
+  ComputeShaderRecord,
   CallableShaderRecord,
   DispatchConstants,
   CbvSrvUavDescriptorHeapAliasedTables,

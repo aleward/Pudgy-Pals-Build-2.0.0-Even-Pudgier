@@ -15,6 +15,8 @@ using namespace DX;
 //
 
 // LOOKAT-2.3, LOOKAT-2.7: Shader entry points.
+const wchar_t* DXProceduralProject::c_computeShaderName = L"MyComputeShader";
+
 const wchar_t* DXProceduralProject::c_raygenShaderName = L"MyRaygenShader";
 const wchar_t* DXProceduralProject::c_intersectionShaderNames[] =
 {

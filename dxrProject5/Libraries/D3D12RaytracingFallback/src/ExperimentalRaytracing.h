@@ -188,7 +188,8 @@ public:
         experimentalDesc.Width = pDesc->Width;
         experimentalDesc.HitGroupTable = pDesc->HitGroupTable;
         experimentalDesc.MissShaderTable = pDesc->MissShaderTable;
-        experimentalDesc.RayGenerationShaderRecord = pDesc->RayGenerationShaderRecord;
+		experimentalDesc.RayGenerationShaderRecord = pDesc->RayGenerationShaderRecord;
+		experimentalDesc.ComputeShaderRecord = pDesc->ComputeShaderRecord;
         m_pRaytracingCommandList->DispatchRays((ID3D12StateObjectPrototype *)m_pStateObject->GetStateObject(), &experimentalDesc);
     }
 

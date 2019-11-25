@@ -15,6 +15,7 @@ void DXProceduralProject::BuildShaderTables()
 	void* missShaderIDs[RayType::Count];
 	void* hitGroupShaderIDs_TriangleGeometry[RayType::Count];
 	void* hitGroupShaderIDs_AABBGeometry[IntersectionShaderType::Count][RayType::Count];
+	void* computeShaderID;
 
 	// A shader name look-up table for shader table debug print out.
 	unordered_map<void*, wstring> shaderIdToStringMap;
@@ -53,6 +54,10 @@ void DXProceduralProject::BuildShaderTables()
 				shaderIdToStringMap[hitGroupShaderIDs_AABBGeometry[i][j]] = c_hitGroupNames_AABBGeometry[i][j];
 			}
 		}
+
+		// Compute shader
+		computeShaderID = stateObjectProperties->GetShaderIdentifier(c_computeShaderName);
+		shaderIdToStringMap[computeShaderID] = c_computeShaderName;
 	};
 
 	// Get shader identifiers using the lambda function defined above.
@@ -185,5 +190,22 @@ void DXProceduralProject::BuildShaderTables()
 		hitGroupShaderTable.DebugPrint(shaderIdToStringMap);
 		m_hitGroupShaderTableStrideInBytes = hitGroupShaderTable.GetShaderRecordSize();
 		m_hitGroupShaderTable = hitGroupShaderTable.GetResource();
+	}
+
+	// Compute shader table. We use the ShaderTable class in DXR-Structs, which is essentially 
+	// a bundle of ShaderRecords (also defined in DXR-Structs) that are uploadable to the GPU.
+	{
+		UINT numShaderRecords = 1;
+		UINT shaderRecordSize = shaderIDSize; // No root arguments
+
+		// The RayGen shader table contains a single ShaderRecord: the one single raygen shader!
+		ShaderTable computeShaderTable(device, numShaderRecords, shaderRecordSize, L"ComputeShaderTable");
+
+		// Push back the shader record, which does not need any root signatures.
+		computeShaderTable.push_back(ShaderRecord(computeShaderID, shaderRecordSize, nullptr, 0));
+
+		// Save the uploaded resource (remember that the uploaded resource is created when we call Allocate() on a GpuUploadBuffer
+		computeShaderTable.DebugPrint(shaderIdToStringMap);
+		m_computeShaderTable = computeShaderTable.GetResource();
 	}
 }

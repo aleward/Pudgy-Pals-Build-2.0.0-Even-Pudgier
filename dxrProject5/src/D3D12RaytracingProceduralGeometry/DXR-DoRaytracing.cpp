@@ -87,7 +87,13 @@ void DXProceduralProject::DoRaytracing()
 		auto& raygen = dispatchDesc->RayGenerationShaderRecord;
 		raygen = {};
 		raygen.StartAddress = m_rayGenShaderTable->GetGPUVirtualAddress();
-		raygen.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;;
+		raygen.SizeInBytes = m_rayGenShaderTable->GetDesc().Width;
+
+		// UGH?: Probably unneeded but
+		auto& computeShade = dispatchDesc->ComputeShaderRecord;
+		computeShade = {};
+		computeShade.StartAddress = m_computeShaderTable->GetGPUVirtualAddress();
+		computeShade.SizeInBytes = m_computeShaderTable->GetDesc().Width;;
 
 		// We do this for you. This will define how many threads will be dispatched. Basically like a blockDims in CUDA!
 		dispatchDesc->Width = m_width;

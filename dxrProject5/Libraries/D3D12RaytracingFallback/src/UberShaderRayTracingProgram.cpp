@@ -240,6 +240,10 @@ namespace FallbackLayer
         {
             pCommandList->SetComputeRootShaderResourceView(m_patchRootSignatureParameterStart + CallableShaderRecord, desc.CallableShaderTable.StartAddress);
         }
+		if (desc.ComputeShaderRecord.StartAddress)
+		{
+			pCommandList->SetComputeRootShaderResourceView(m_patchRootSignatureParameterStart + ComputeShaderRecord, desc.ComputeShaderRecord.StartAddress);
+		}
 
         DispatchRaysConstants constants;
         constants.RayDispatchDimensionsWidth = desc.Width;
