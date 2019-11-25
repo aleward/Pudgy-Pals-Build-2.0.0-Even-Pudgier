@@ -35,19 +35,19 @@ static const XMFLOAT4 ChromiumReflectance = XMFLOAT4(1.0f, 0.556f, 0.554f, 1.0f)
 static const XMFLOAT4 BackgroundColor = XMFLOAT4(0.8f, 0.9f, 1.0f, 1.0f);
 static const float InShadowRadiance = 0.35f;
 
-static const int MAX_STEPS = 300;
+static const int MAX_STEPS = 200;
 static const float MIN_DIST = 0.0001;
 static const float MAX_DIST = 100.0;
-static const float EPSILON = 0.01;
+static const float EPSILON = 0.02;
 
 static const int HEAD_COUNT = 5;
 static const int SPINE_LOC_COUNT = 24;
 static const int SPINE_RAD_COUNT = 8;
-static const int APPEN_COUNT = 50;
+static const int APPEN_COUNT = 8;
 static const int LIMBLEN_COUNT = 8;
 static const int JOINT_LOC_COUNT = 90;
 static const int JOINT_RAD_COUNT = 30;
-static const int ROT_COUNT = 100;
+static const int ROT_COUNT = 120;
 
 // Ray types traced in this project.
 namespace RayType {
@@ -159,10 +159,9 @@ struct PrimitiveInstancePerFrameBuffer
 
 struct AppendageInfoBuffer
 {
-    float appenData[APPEN_COUNT];
+    float numAppen;
     float appenBools[APPEN_COUNT];
     float appenRads[APPEN_COUNT];
-    XMMATRIX appenRots[APPEN_COUNT];
 };
 
 struct LimbInfoBuffer
@@ -174,7 +173,7 @@ struct LimbInfoBuffer
 
 struct RotationInfoBuffer
 {
-    XMMATRIX rotations[ROT_COUNT];
+    float rotations[ROT_COUNT]; //axis angle per joint
 };
 
 struct HeadSpineInfoBuffer

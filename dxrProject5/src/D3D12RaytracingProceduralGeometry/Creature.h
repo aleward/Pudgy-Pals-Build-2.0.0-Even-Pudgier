@@ -19,6 +19,9 @@ public:
 	std::vector<float> jointRadii;	// Send to shader
 	std::vector<float> limbLengths;	// Send to shader
 	Appendages *appendages;	// Send appendageData to shader
+    std::vector<float> appenBools; // 0 for foot, 1 for hand
+    std::vector<float> appenRads;
+    std::vector<float> jointRots;
 	int texture1;	// Send to shader
 	int texture2;	// Send to shader
 	XMFLOAT3 color1;	// Send to shader

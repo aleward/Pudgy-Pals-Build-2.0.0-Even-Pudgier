@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Limb.h"
+#include <random>
 
 
 Limb::Limb(bool isLeg)
@@ -15,9 +16,13 @@ Limb::~Limb()
 }
 
 void Limb::generate(XMFLOAT3 startPos, float startRadius) {
-	int numJoints = std::floor((std::rand() / RAND_MAX) * 3. + 2.);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> distrib(0, 1);
+    
+    int numJoints = std::floor(distrib(gen) * 3.0 + 2.0);
 
-	float radius = ((std::rand() / RAND_MAX) * 2. - 1.) * 0.1 + startRadius;
+	float radius = (distrib(gen) * 2.0 - 1.0) * 0.1 + startRadius;
 	if (radius > 0.25) radius = 0.25;
 	if (radius < 0.05) radius = 0.05;
 
@@ -25,10 +30,10 @@ void Limb::generate(XMFLOAT3 startPos, float startRadius) {
 	jointRadii.push_back(radius);
 
 	for (int i = 1; i < numJoints; i++) {
-		float yaw = ((std::rand() / RAND_MAX)) * 3.1415926 * 0.8 + 3.1415926;
-		float pitch = ((std::rand() / RAND_MAX) * 2 - 1) * 3.1415926 * 0.35;
+		float yaw = (distrib(gen)) * 3.1415926 * 0.8 + 3.1415926;
+		float pitch = (distrib(gen) * 2.0 - 1.0) * 3.1415926 * 0.35;
 		if (!isLeg) pitch -= 0.5;
-		float r = jointRadii[i - 1] / 0.2 * ((std::rand() / RAND_MAX) * 0.5 + 0.2 + jointRadii[i - 1] / 2);
+		float r = jointRadii[i - 1] / 0.2 * (distrib(gen) * 0.5 + 0.2 + jointRadii[i - 1] / 2);
 
 		float dx = r * std::sin(pitch) * std::cos(yaw);
 		float dy = r * std::cos(pitch);
@@ -37,12 +42,12 @@ void Limb::generate(XMFLOAT3 startPos, float startRadius) {
 		XMFLOAT3 newPos = XMFLOAT3(0, 0, 0);
 		XMStoreFloat3(&newPos, newPosV);
 		if (isLeg && i + 1 >= numJoints) {
-			newPos.y = 0.0;
+			newPos.y = 1.8;
 		}
-		if (newPos.z < 0.05) newPos.z = 0.1;
-		if (newPos.y > -0.1) newPos.y = -0.1;
+		//if (newPos.z < 0.05) newPos.z = 0.1;
+		if (newPos.y < -0.5) newPos.y = -0.5;
 		jointPos.push_back(newPos);
-		radius += ((std::rand() / RAND_MAX) * 2 - 1) * 0.05 - 0.1;
+		radius += (distrib(gen) * 2 - 1) * 0.05 - 0.1;
 		if (radius > 0.25) radius = 0.25;
 		if (radius < 0.05) radius = 0.05;
 		jointRadii.push_back(radius);

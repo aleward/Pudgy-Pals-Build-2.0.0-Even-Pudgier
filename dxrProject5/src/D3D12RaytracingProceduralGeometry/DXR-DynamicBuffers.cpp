@@ -60,15 +60,15 @@ void DXProceduralProject::InitializeScene()
 	// Setup camera.
 	{
 		// Initialize the view and projection inverse matrices.
-		m_eye = { 0.0f, 5.3f, -17.0f, 1.0f };
-		m_at = { 0.0f, 5.0f, 0.0f, 1.0f };
+		m_eye = { -10.0f, 10.0f, -25.0f, 1.0f };
+		m_at = { 10.0f, 10.0f, 10.0f, 1.0f };
 		XMVECTOR right = { 1.0f, 0.0f, 0.0f, 0.0f };
 
 		XMVECTOR direction = XMVector4Normalize(m_at - m_eye);
 		m_up = XMVector3Normalize(XMVector3Cross(direction, right));
 
 		// Rotate camera around Y axis.
-		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(45.0f));
+		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(-90.0f));
 		m_eye = XMVector3Transform(m_eye, rotate);
 		m_up = XMVector3Transform(m_up, rotate);
 
@@ -153,7 +153,7 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	//XMMATRIX mScale2 = XMMatrixScaling(2, 2, 2);
 
 	// Rotation matrix that changes over time
-	XMMATRIX mRotation = XMMatrixRotationY(-2 * animationTime);
+	XMMATRIX mRotation = XMMatrixRotationY(XMConvertToRadians(0.0f));
 
 	
 	auto SetTransformForAABB = [&](UINT primitiveIndex, XMMATRIX& mScale, XMMATRIX& mRotation)
@@ -216,7 +216,7 @@ void DXProceduralProject::UpdateCreatureAttributes()
     auto SetCreatureBuffers = [&](UINT primitiveIndex)
     {
         Creature *creature = new Creature();
-        creature->generate(0, 3, 0);
+        creature->generate(0, 2, -1);
 
         for (int h = 0; h < min(HEAD_COUNT, creature->head->headData.size()); h++)
         {
@@ -231,12 +231,11 @@ void DXProceduralProject::UpdateCreatureAttributes()
             m_headSpineBuffer[primitiveIndex].spineRadData[sr] = creature->spine->metaBallRadii[sr];
         }
 
-        for (int a = 0; a < min(APPEN_COUNT, creature->appendages->appendageData.size()); a++)
+        m_appenBuffer[primitiveIndex].numAppen = creature->appendages->appendageData[0];
+        for (int a = 0; a < min(APPEN_COUNT, creature->appenBools.size()); a++)
         {
-            m_appenBuffer[primitiveIndex].appenData[a] = creature->appendages->appendageData[a];
-            m_appenBuffer[primitiveIndex].appenBools[a] = 0;
-            m_appenBuffer[primitiveIndex].appenRads[a] = 1;
-            m_appenBuffer[primitiveIndex].appenRots[a] = XMMatrixIdentity();
+            m_appenBuffer[primitiveIndex].appenBools[a] = creature->appenBools[a];
+            m_appenBuffer[primitiveIndex].appenRads[a] = creature->appenRads[a];
         }
 
         for (int l = 0; l < min(LIMBLEN_COUNT, creature->limbLengths.size()); l++)
@@ -252,9 +251,9 @@ void DXProceduralProject::UpdateCreatureAttributes()
             m_limbBuffer[primitiveIndex].jointRadData[jr] = creature->jointRadii[jr];
         }
 
-        for (int r = 0; r < ROT_COUNT; r++)
+        for (int r = 0; r < min(ROT_COUNT, creature->jointRots.size()); r++)
         {
-            m_rotBuffer[primitiveIndex].rotations[r] = XMMatrixIdentity();
+            m_rotBuffer[primitiveIndex].rotations[r] = creature->jointRots[r];
         }
     };
 

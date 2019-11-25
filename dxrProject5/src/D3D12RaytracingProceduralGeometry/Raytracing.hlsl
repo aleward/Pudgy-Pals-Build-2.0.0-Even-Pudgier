@@ -300,8 +300,6 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float t = 1.0f - min(RayTCurrent() / 500.0f, 1.0f);
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
-    //HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-    //rayPayload.color = float4(headSpineAttr.headData[3], headSpineAttr.headData[3], headSpineAttr.headData[3], 1.0);
     rayPayload.color = falloffColor;
 }
 
@@ -393,6 +391,21 @@ float3x3 rotateMatZ(float angle) {
         float3(sin(rad), cos(rad), 0.0),
         float3(0.0, 0.0, 1.0)
     );
+}
+
+float3 rotateInverseAxisAngle(float angle, float x, float y, float z, float3 p)
+{
+    float c, s;
+    sincos(angle, s, c);
+
+    float t = 1 - c;
+
+    float3x3 m = float3x3(
+        t * x * x + c,      t * x * y - s * z,  t * x * z + s * y,
+        t * x * y + s * z,  t * y * y + c,      t * y * z - s * x,
+        t * x * z - s * y,  t * y * z + s * x,  t * z * z + c);
+
+    return mul(transpose(m), p);
 }
 
 float3x3 scaleMat(float amt) {
@@ -556,7 +569,7 @@ float handSDF(float3 p, float size) {
     return combine;
 }
 
-float appendagesSDF(float3 p, float u_AppenData[APPEN_COUNT], float u_AppenRad[APPEN_COUNT], float u_AppenBools[APPEN_COUNT], XMMATRIX u_AppenRots[APPEN_COUNT]) {
+float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], float u_AppenBools[APPEN_COUNT], float u_jointLocs[JOINT_LOC_COUNT], float u_LimbLengths[LIMBLEN_COUNT], float u_Rotations[ROT_COUNT]) {
     //AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
     
     float all = MAX_DIST;
@@ -568,9 +581,11 @@ float appendagesSDF(float3 p, float u_AppenData[APPEN_COUNT], float u_AppenRad[A
     int armsNow = 0;
     int numAppen = 0;
 
-    for (int i = 0; i < int(u_AppenData[0]); i++) {
-        int start = (i * 3) + 1;
-        float3 offset = float3(u_AppenData[start], u_AppenData[start + 1], u_AppenData[start + 2]);
+    int startPos = 0;
+    int startRot = 0;
+    for (int i = 0; i < totalAppen; i++) {
+        int thisPos = startPos + (3 * ((u_LimbLengths[i] - 1)));
+        float3 offset = float3(u_jointLocs[thisPos], u_jointLocs[thisPos + 1], u_jointLocs[thisPos + 2]);
 
         if ((i % 2) == 0) {
             angle = angle1;
@@ -584,41 +599,29 @@ float appendagesSDF(float3 p, float u_AppenData[APPEN_COUNT], float u_AppenRad[A
             armsNow = 1;
         }
 
+        int thisRot = startRot + (4 * ((u_LimbLengths[i] - 1)));
         if (armsNow == 0) {
             float3 rotP = mul(rotateMatZ(angle), mul(rotateMatY(90.0), mul(rotateMatZ(90.0), (p + offset))));
             foot = clawFootSDF(rotP, u_AppenRad[numAppen]);
         }
         else {
-            float3 q = mul(float4((p + offset), 1.0), transpose(u_AppenRots[numAppen])).xyz;
+            float3 q = rotateInverseAxisAngle(u_Rotations[thisRot], u_Rotations[thisRot+1], u_Rotations[thisRot+2], u_Rotations[thisRot+3], 
+                p + offset);
+                //mul(float4((p + offset), 1.0), transpose(u_AppenRots[numAppen])).xyz;
             foot = handSDF(mul(rotateMatZ(180.0), q), u_AppenRad[numAppen]);
         }
 
-        // //if(u_AppenBools[numAppen] != 0.0) {
-        // if((numAppen % 2) == 0) {
-        // 	foot = clawFootSDF((p + offset)*rotateMatZ(90.0) * rotateMatY(90.0) * rotateMatZ(angle));		
-        // }
-        // else {
-        // 	foot = handSDF((p + offset) * rotateMatZ(135.0));
-        // }
-        // else if(u_AppenBools[2] == 0){			
-        // 	
-        // }
-
         numAppen = numAppen + 1;
+        startPos = thisPos + 3;
+        startRot = thisRot + 4;
 
-        // if((p + offset).y == 100.0) { //should be 0, but does this work
-        // 	foot = handSDF((p + offset) * rotateMatZ(135.0));
-        // }
-        // else {
-        // 	foot = clawFootSDF((p + offset)*rotateMatZ(90.0) * rotateMatY(90.0) * rotateMatZ(angle));
-        // }
         all = min(all, foot);
     }
 
     return all;
 }
 
-float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOINT_LOC_COUNT], float u_JointRad[JOINT_RAD_COUNT], XMMATRIX u_Rotations[ROT_COUNT]) {
+float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOINT_LOC_COUNT], float u_JointRad[JOINT_RAD_COUNT], float u_Rotations[ROT_COUNT]) {
 
     int countSegs = 0;
 
@@ -660,17 +663,15 @@ float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOIN
 
             float3 dir = point1 - point0; //dir is correct
 
-
-
-            float4x4 outMat4 = transpose(u_Rotations[countSegs]);
-            countSegs++;
-
-            float3 q = mul(float4((p + midpoint), 1.0), outMat4).xyz;
-
-
+            //float4x4 outMat4 = transpose(u_Rotations[countSegs]);
+            int r = (i / 3) * 4;
+            float3 q = rotateInverseAxisAngle(u_Rotations[r], u_Rotations[r + 1], u_Rotations[r + 2], u_Rotations[r + 3],
+                p + midpoint);
+                //mul(float4((p + midpoint), 1.0), outMat4).xyz;
 
             float part = sdConeSection(q, len / 2.0, u_JointRad[(i + 3) / 3], u_JointRad[i / 3]);
             segments = min(segments, part);
+            countSegs++;
         }
 
         float combine = smin(arm, segments, .2); // this is one arm
@@ -697,32 +698,31 @@ float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPI
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
     HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-    //AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
-    //LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
-    //RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
+    AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+    LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+    RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
 
     float u_Head[HEAD_COUNT] = headSpineAttr.headData;
 
     p += float3(0, 0, 0);
     // p = p * rotateMatY(u_Time) ; // rotates creature
-    //return sphereSDF(p, 1.0);
-    //return bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    
-    float headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    return smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .15);
-    if (u_Head[4] == 0.0) {
+    //return 0;
+	float headSDF = 0;
+    if (u_Head[4] == 0) {
         headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    else if (u_Head[4] == 1.0) {
+    else if (u_Head[4] == 1) {
         headSDF = dinoHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    else if (u_Head[4] == 2.0) {
+    else if (u_Head[4] == 2) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
-    //float dist = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-    return headSDF;//smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
-        //appendagesSDF(p, appenAttr.appenData, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots), .2), dist, .1);
-
+    float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
+    //float plusFeet = smin(appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots, limbAttr.jointLocData, limbAttr.limbLengths), headSpine, .1);
+    return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
+        appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
+    //return smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
+        //appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2);
     //return min(handSDF(p+ float3(-1.0,0.0,0.0), u_AppenRad[0]), clawFootSDF(p + float3(1.0,0.0,0.0), u_AppenRad[0]));
 }
 
