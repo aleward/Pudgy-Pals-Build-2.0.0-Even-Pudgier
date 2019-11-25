@@ -370,7 +370,10 @@ float sceneSDF(float3 p) {
 	}
 	float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
 	//float plusArm = smin(appendagesSDF(p, appenAttr.appenData, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots), headSpine, .1);
-	return min(headSpine, boxTest(p + float3(-0.5, 0.0, 0.0), float3(2.0, 1.0, 1.0)));
+	
+	// Marching cubes size test
+	//return min(headSpine, boxTest(p + float3(-0.4, 0.2, 0.0), float3(1.6, 0.7, 0.5)));
+	
 	return headSpine;//smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
 		//appendagesSDF(p, appenAttr.appenData, appenAttr.appenRads, appenAttr.appenBools, appenAttr.appenRots), .2), dist, .1);
 

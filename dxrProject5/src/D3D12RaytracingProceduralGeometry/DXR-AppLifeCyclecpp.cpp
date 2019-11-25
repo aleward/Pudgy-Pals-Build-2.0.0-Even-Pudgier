@@ -49,9 +49,12 @@ void DXProceduralProject::OnUpdate()
 		float secondsToRotateAround = 48.0f;
 		float angleToRotateBy = 360.0f * (elapsedTime / secondsToRotateAround);
 		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(angleToRotateBy));
-		m_eye = XMVector3Transform(m_eye, rotate);
+		XMVECTOR diff = XMVectorSubtract(m_eye, m_at);
+		diff = XMVector3Transform(diff, rotate);
+		m_eye = XMVectorAdd(m_at, diff);
+		//m_eye = XMVector3Transform(m_eye, rotate);
 		m_up = XMVector3Transform(m_up, rotate);
-		m_at = XMVector3Transform(m_at, rotate);
+		//m_at = XMVector3Transform(m_at, rotate);
 		UpdateCameraMatrices();
 	}
 
