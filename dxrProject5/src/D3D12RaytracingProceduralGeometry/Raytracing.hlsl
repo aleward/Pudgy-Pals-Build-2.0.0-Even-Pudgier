@@ -346,19 +346,19 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 
 	float3 hitPosition = HitWorldPosition();
 	float4 aoColor = float4(1, 1, 1, 1);
-	int aoSamples = 5;
+	int aoSamples = 20;
 	int aoHits = 0;
 	float3 n = attr.normal;
 	float3 t = normalize(cross(n, n + float3(0, 0, 1)));
 	float3 b = normalize(cross(n, t));
-	float3x3 worldToTangent = transpose(float3x3(b, t, n));
+	float3x3 worldToTangent = float3x3(b, t, n);
 	for (int i = 0; i < aoSamples; i++) {
 		float2 s = rand_2_10(hitPosition.x + i, hitPosition.x + i + 10);
 		float3 hemPoint = squareToHemisphereUniform(s.x, s.y);
 		hemPoint = mul(hemPoint, worldToTangent);
 		hemPoint += hitPosition;
 		Ray aoRay = { hitPosition + n * 0.02, normalize(hemPoint - hitPosition) };
-		bool aoRayHit = TraceAORayAndReportIfHit(aoRay, 0.04f);
+		bool aoRayHit = TraceAORayAndReportIfHit(aoRay, 2.f);
 		if (aoRayHit) aoHits++;
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
@@ -780,8 +780,9 @@ float sceneSDF(float3 p) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
     float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-    return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
-        appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
+	return headSpine;
+    //return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
+        //appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
