@@ -182,6 +182,30 @@ bool TraceShadowRayAndReportIfHit(in Ray ray, in UINT currentRayRecursionDepth)
     return rayPayload.hit;
 }
 
+bool TraceAORayAndReportIfHit(in Ray ray, in float maxDist)
+{
+	// Set the ray's extents.
+	RayDesc rayDesc;
+	rayDesc.Origin = ray.origin;
+	rayDesc.Direction = ray.direction;
+	// Set TMin to a zero value to avoid aliasing artifacts along contact areas.
+	// Note: make sure to enable face culling so as to avoid surface face fighting.
+	rayDesc.TMin = 0;
+	rayDesc.TMax = maxDist;
+
+	ShadowRayPayload rayPayload = { true };
+
+	TraceRay(g_scene,
+		RAY_FLAG_CULL_BACK_FACING_TRIANGLES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_FORCE_OPAQUE,
+		TraceRayParameters::InstanceMask,
+		TraceRayParameters::HitGroup::Offset[RayType::Shadow],
+		TraceRayParameters::HitGroup::GeometryStride,
+		TraceRayParameters::MissShader::Offset[RayType::Shadow],
+		rayDesc, rayPayload);
+
+	return rayPayload.hit;
+}
+
 //***************************************************************************
 //********************------ Ray gen shader -------**************************
 //***************************************************************************
@@ -261,6 +285,22 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 	rayPayload.color = falloffColor;
 }
 
+// From https://gamedev.stackexchange.com/questions/32681/random-number-hlsl
+float2 rand_2_10(in float inX, in float inY) {
+	float2 uv = float2(inX, inY);
+	float noiseX = (frac(sin(dot(uv, float2(12.9898, 78.233) * 2.0)) * 43758.5453));
+	float noiseY = sqrt(1 - noiseX * noiseX);
+	return float2(noiseX, noiseY);
+}
+
+float3 squareToHemisphereUniform(in float inX, in float inY)
+{
+	float z = inX;
+	float x = cos(2 * 3.1415926 * inY) * sqrt(1 - z * z);
+	float y = sin(2 * 3.1415926 * inY) * sqrt(1 - z * z);
+	return float3(x, y, z);
+}
+
 // TODO: Write the closest hit shader for a procedural geometry.
 // You suppose this is called after the ray successfully iterated over all geometries and determined it intersected with some AABB.
 // The attributes of the AABB are in attr (basically the normal)
@@ -275,6 +315,7 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+	/*
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
     
@@ -301,6 +342,28 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
     rayPayload.color = falloffColor;
+	*/
+
+	float3 hitPosition = HitWorldPosition();
+	float4 aoColor = float4(1, 1, 1, 1);
+	int aoSamples = 5;
+	int aoHits = 0;
+	float3 n = attr.normal;
+	float3 t = normalize(cross(n, n + float3(0, 0, 1)));
+	float3 b = normalize(cross(n, t));
+	float3x3 worldToTangent = transpose(float3x3(b, t, n));
+	for (int i = 0; i < aoSamples; i++) {
+		float2 s = rand_2_10(hitPosition.x + i, hitPosition.x + i + 10);
+		float3 hemPoint = squareToHemisphereUniform(s.x, s.y);
+		hemPoint = mul(hemPoint, worldToTangent);
+		hemPoint += hitPosition;
+		Ray aoRay = { hitPosition + n * 0.02, normalize(hemPoint - hitPosition) };
+		bool aoRayHit = TraceAORayAndReportIfHit(aoRay, 0.04f);
+		if (aoRayHit) aoHits++;
+	}
+	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
+
+	rayPayload.color = aoColor;
 }
 
 //***************************************************************************
