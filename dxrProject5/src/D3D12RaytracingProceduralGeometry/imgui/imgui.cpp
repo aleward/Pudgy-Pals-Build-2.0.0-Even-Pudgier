@@ -4171,8 +4171,9 @@ void ImGui::Render()
     ImGuiContext& g = *GImGui;
     IM_ASSERT(g.Initialized);   // Forgot to call ImGui::NewFrame()
 
-    if (g.FrameCountEnded != g.FrameCount)
-        ImGui::EndFrame();
+	if (g.FrameCountEnded != g.FrameCount) {
+		ImGui::EndFrame();
+	}
     g.FrameCountRendered = g.FrameCount;
 
     // Gather windows to render
