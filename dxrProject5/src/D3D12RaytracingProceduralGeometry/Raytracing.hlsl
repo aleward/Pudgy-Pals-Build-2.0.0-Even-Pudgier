@@ -315,7 +315,7 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
-	/*
+	
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
     
@@ -342,9 +342,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
     rayPayload.color = falloffColor;
-	*/
+	
 
-	float3 hitPosition = HitWorldPosition();
+	/*float3 hitPosition = HitWorldPosition();
 	float4 aoColor = float4(1, 1, 1, 1);
 	int aoSamples = 5;
 	int aoHits = 0;
@@ -363,7 +363,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
 
-	rayPayload.color = aoColor;
+	rayPayload.color = aoColor;*/
 }
 
 //***************************************************************************
@@ -632,8 +632,10 @@ float handSDF(float3 p, float size) {
     return combine;
 }
 
-float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], float u_AppenBools[APPEN_COUNT], float u_jointLocs[JOINT_LOC_COUNT], float u_LimbLengths[LIMBLEN_COUNT], float u_Rotations[ROT_COUNT]) {
-    //AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+float appendagesSDF(float3 p) {
+    AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
     
     float all = MAX_DIST;
     float angle;
@@ -646,9 +648,9 @@ float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], f
 
     int startPos = 0;
     int startRot = 0;
-    for (int i = 0; i < totalAppen; i++) {
-        int thisPos = startPos + (3 * ((u_LimbLengths[i] - 1)));
-        float3 offset = float3(u_jointLocs[thisPos], u_jointLocs[thisPos + 1], u_jointLocs[thisPos + 2]);
+    for (int i = 0; i < appenAttr.numAppen; i++) {
+        int thisPos = startPos + (3 * ((limbAttr.limbLengths[i] - 1)));
+        float3 offset = float3(limbAttr.jointLocData[thisPos], limbAttr.jointLocData[thisPos + 1], limbAttr.jointLocData[thisPos + 2]);
 
         if ((i % 2) == 0) {
             angle = angle1;
@@ -658,20 +660,20 @@ float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], f
         }
         float foot;
 
-        if (u_AppenBools[numAppen] == 1) {
+        if (appenAttr.appenBools[numAppen] == 1) {
             armsNow = 1;
         }
 
-        int thisRot = startRot + (4 * ((u_LimbLengths[i] - 1)));
+        int thisRot = startRot + (4 * ((limbAttr.limbLengths[i] - 1)));
         if (armsNow == 0) {
             float3 rotP = mul(rotateMatZ(angle), mul(rotateMatY(90.0), mul(rotateMatZ(90.0), (p + offset))));
-            foot = clawFootSDF(rotP, u_AppenRad[numAppen]);
+            foot = clawFootSDF(rotP, appenAttr.appenRads[numAppen]);
         }
         else {
-            float3 q = rotateInverseAxisAngle(u_Rotations[thisRot], u_Rotations[thisRot+1], u_Rotations[thisRot+2], u_Rotations[thisRot+3], 
+            float3 q = rotateInverseAxisAngle(rotAttr.rotations[thisRot], rotAttr.rotations[thisRot+1], rotAttr.rotations[thisRot+2], rotAttr.rotations[thisRot+3],
                 p + offset);
                 //mul(float4((p + offset), 1.0), transpose(u_AppenRots[numAppen])).xyz;
-            foot = handSDF(mul(rotateMatZ(180.0), q), u_AppenRad[numAppen]);
+            foot = handSDF(mul(rotateMatZ(180.0), q), appenAttr.appenRads[numAppen]);
         }
 
         numAppen = numAppen + 1;
@@ -684,16 +686,19 @@ float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], f
     return all;
 }
 
-float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOINT_LOC_COUNT], float u_JointRad[JOINT_RAD_COUNT], float u_Rotations[ROT_COUNT]) {
+float armSDF(float3 p) {
 
-    int countSegs = 0;
+	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
+	
+	int countSegs = 0;
 
     float allLimbs = MAX_DIST;
     int incr = 0;
     int numLimbs = 0;
     int jointNum = 0;
     for (int i = 0; i < LIMBLEN_COUNT; i++) {
-        jointNum += u_LimbLengths[i];
+        jointNum += limbAttr.limbLengths[i];
     }
 
     //this is for each limb
@@ -705,13 +710,13 @@ float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOIN
         // NEED joint number to do the below operations...
 
         //count is number of joints in this limb
-        count = int(u_LimbLengths[numLimbs - 1]);
+        count = int(limbAttr.limbLengths[numLimbs - 1]);
 
         float arm = MAX_DIST;
         // all joint positions for a LIM (jointNum * 3)
         for (int i = j; i < (j + (count * 3)); i = i + 3) {
-            float3 pTemp = p + float3(u_JointLoc[i], u_JointLoc[i + 1], u_JointLoc[i + 2]);
-            arm = min(arm, sphereSDF(pTemp, u_JointRad[i / 3]));
+            float3 pTemp = p + float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
+            arm = min(arm, sphereSDF(pTemp, limbAttr.jointRadData[i / 3]));
 
         }
 
@@ -719,8 +724,8 @@ float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOIN
         float segments = MAX_DIST;
 
         for (i = j; i < (j + ((count - 1) * 3)); i = i + 3) {
-            float3 point0 = float3(u_JointLoc[i], u_JointLoc[i + 1], u_JointLoc[i + 2]);
-            float3 point1 = float3(u_JointLoc[i + 3], u_JointLoc[i + 4], u_JointLoc[i + 5]);
+            float3 point0 = float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
+            float3 point1 = float3(limbAttr.jointLocData[i + 3], limbAttr.jointLocData[i + 4], limbAttr.jointLocData[i + 5]);
             float3 midpoint = float3((point0.x + point1.x) / 2.0, (point0.y + point1.y) / 2.0, (point0.z + point1.z) / 2.0);
             float len = distance(point0, point1);
 
@@ -728,11 +733,11 @@ float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOIN
 
             //float4x4 outMat4 = transpose(u_Rotations[countSegs]);
             int r = (i / 3) * 4;
-            float3 q = rotateInverseAxisAngle(u_Rotations[r], u_Rotations[r + 1], u_Rotations[r + 2], u_Rotations[r + 3],
+            float3 q = rotateInverseAxisAngle(rotAttr.rotations[r], rotAttr.rotations[r + 1], rotAttr.rotations[r + 2], rotAttr.rotations[r + 3],
                 p + midpoint);
                 //mul(float4((p + midpoint), 1.0), outMat4).xyz;
 
-            float part = sdConeSection(q, len / 2.0, u_JointRad[(i + 3) / 3], u_JointRad[i / 3]);
+            float part = sdConeSection(q, len / 2.0, limbAttr.jointRadData[(i + 3) / 3], limbAttr.jointRadData[i / 3]);
             segments = min(segments, part);
             countSegs++;
         }
@@ -761,9 +766,6 @@ float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPI
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
     HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-    AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
-    LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
-    RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
 
     float u_Head[HEAD_COUNT] = headSpineAttr.headData;
 
@@ -780,8 +782,8 @@ float sceneSDF(float3 p) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
     float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-    return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
-        appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
+	return smin(smin(armSDF(p),
+        appendagesSDF(p), .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
