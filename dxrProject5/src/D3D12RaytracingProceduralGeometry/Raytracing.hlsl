@@ -315,7 +315,6 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
-	/*
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
     
@@ -342,9 +341,8 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
     rayPayload.color = falloffColor;
-	*/
 
-	float3 hitPosition = HitWorldPosition();
+	/*float3 hitPosition = HitWorldPosition();
 	float4 aoColor = float4(1, 1, 1, 1);
 	int aoSamples = 20;
 	int aoHits = 0;
@@ -362,8 +360,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 		if (aoRayHit) aoHits++;
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
-
-	rayPayload.color = aoColor;
+	rayPayload.color = aoColor;*/
 }
 
 //***************************************************************************
@@ -429,31 +426,31 @@ void MyIntersectionShader_AnalyticPrimitive()
     }
 }
 
-float3x3 rotateMatX(float angle) {
-    float rad = radians(angle);
-    return float3x3(
-        float3(1.0, 0.0, 0.0),
-        float3(0.0, cos(rad), -sin(rad)),
-        float3(0.0, sin(rad), cos(rad))
-    );
+float3 rotateX(float3 p, float angle) {
+	float rad = radians(angle);
+	float co = cos(rad);
+	float si = sin(rad);
+	float2x2 mat = float2x2(co, si, -si, co);
+	p.yz = mul(p.yz, mat);
+	return p;
 }
 
-float3x3 rotateMatY(float angle) {
-    float rad = radians(angle);
-    return float3x3(
-        float3(cos(rad), 0.0, sin(rad)),
-        float3(0.0, 1.0, 0.0),
-        float3(-sin(rad), 0.0, cos(rad))
-    );
+float3 rotateY(float3 p, float angle) {
+	float rad = radians(angle);
+	float co = cos(rad);
+	float si = sin(rad);
+	float2x2 mat = float2x2(co, -si, si, co);
+	p.xz = mul(p.xz, mat);
+	return p;
 }
 
-float3x3 rotateMatZ(float angle) {
-    float rad = radians(angle);
-    return float3x3(
-        float3(cos(rad), -sin(rad), 0.0),
-        float3(sin(rad), cos(rad), 0.0),
-        float3(0.0, 0.0, 1.0)
-    );
+float3 rotateZ(float3 p, float angle) {
+	float rad = radians(angle);
+	float co = cos(rad);
+	float si = sin(rad);
+	float2x2 mat = float2x2(co, si, -si, co);
+	p.xy = mul(p.xy, mat);
+	return p;
 }
 
 float3 rotateInverseAxisAngle(float angle, float x, float y, float z, float3 p)
@@ -494,8 +491,6 @@ float sminPow(float a, float b, float k) {
     a = pow(a, k); b = pow(b, k);
     return pow((a*b) / (a + b), 1.0 / k);
 }
-
-
 
 float sphereSDF(float3 p, float r) {
     return length(p) - r;
@@ -554,7 +549,8 @@ float sdConeSection(in float3 p, in float h, in float r1, in float r2) {
 
 //~~~~~HEAD SDFs~~~~~///
 float bugHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-    p = mul(rotateMatY(-90.0), p);
+	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+	p = rotateY(p, -90.0);
     float base = sphereSDF(p, u_Head[3]);
     float eyes = min(sphereSDF(p + u_Head[3] * float3(0.55, -0.35, -.71), u_Head[3] * .2), sphereSDF(p + u_Head[3] * float3(-0.55, -0.35, -.71), u_Head[3] * .2));
     float mandibleBase = sdCappedCylinder(p + u_Head[3] * float3(0.0, 0.001, -.9), u_Head[3] * float2(1.2, 0.1));
@@ -565,31 +561,33 @@ float bugHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
 }
 
 float dinoHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-    p = mul(rotateMatY(-90.0), p);
+	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+	p = rotateY(p, -90.0);
     float base = sphereSDF(p, u_Head[3]);
     float topJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.3, -1.4), u_Head[3] * 1.08);
     topJaw = max(topJaw, -cubeSDF(p + u_Head[3] * float3(0.0, 1.4, -1.4), u_Head[3] * 1.2));
     float bottomJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.6, -1.0), u_Head[3] * .7);
-    bottomJaw = max(bottomJaw, -cubeSDF(mul(rotateMatX(45.0), (p + u_Head[3] * float3(0.0, -.4, -1.7))), u_Head[3] * 1.1));
+    bottomJaw = max(bottomJaw, -cubeSDF(rotateX((p + u_Head[3] * float3(0.0, -.4, -1.7)), 45.0), u_Head[3] * 1.1));
     float combine = smin(base, topJaw, .04);
     combine = smin(combine, bottomJaw, .08);
 
     float eyes = min(sphereSDF(p + u_Head[3] * float3(.9, 0.0, 0.0), u_Head[3] * .3), sphereSDF(p + u_Head[3] * float3(-0.9, 0.0, 0.0), u_Head[3] * .3));
     combine = min(combine, eyes);
-    float brows = min(udBox(mul(rotateMatX(-20.0), (p + u_Head[3] * float3(.85, -0.35, 0.0))), u_Head[3] * float3(.3, .2, .5)), 
-        udBox(mul(rotateMatX(-20.0), (p + u_Head[3] * float3(-0.85, -0.35, 0.0))), u_Head[3] * float3(.3, .2, .5)));
+    float brows = min(udBox(rotateX((p + u_Head[3] * float3(.85, -0.35, 0.0)), -20.0), u_Head[3] * float3(.3, .2, .5)),
+        udBox(rotateX((p + u_Head[3] * float3(-0.85, -0.35, 0.0)), -20.0), u_Head[3] * float3(.3, .2, .5)));
     combine = min(combine, brows);
 
-    float teeth = sdCappedCone(mul(rotateMatX(180.0), (p + u_Head[3] * float3(0.4, 0.7, -1.8))), u_Head[3] * float3(3.0, 1.0, 1.0));
-    teeth = min(teeth, sdCappedCone(mul(rotateMatX(180.0), (p + u_Head[3] * float3(-0.4, 0.7, -1.8))), u_Head[3] * float3(3.0, 1.0, 1.0)));
-    teeth = min(teeth, sdCappedCone(mul(rotateMatX(180.0), (p + u_Head[3] * float3(-0.4, 0.7, -1.3))), u_Head[3] * float3(2.7, 1.0, 1.0)));
-    teeth = min(teeth, sdCappedCone(mul(rotateMatX(180.0), (p + u_Head[3] * float3(0.4, 0.7, -1.3))), u_Head[3] * float3(2.7, 1.0, 1.0)));
+    float teeth = sdCappedCone(rotateX((p + u_Head[3] * float3(0.4, 0.7, -1.8)), 180.0), u_Head[3] * float3(3.0, 1.0, 1.0));
+    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(-0.4, 0.7, -1.8)), 180.0), u_Head[3] * float3(3.0, 1.0, 1.0)));
+    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(-0.4, 0.7, -1.3)), 180.0), u_Head[3] * float3(2.7, 1.0, 1.0)));
+    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(0.4, 0.7, -1.3)), 180.0), u_Head[3] * float3(2.7, 1.0, 1.0)));
     combine = min(combine, teeth);
     return combine;
 }
 
 float trollHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-    p = mul(rotateMatY(-270.0), p);
+	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+	p = rotateY(p, -270.0);
     float base = sphereSDF(p, u_Head[3]);
     float bottomJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.3, .62), u_Head[3] * 1.08);
     bottomJaw = max(bottomJaw, -cubeSDF(p + u_Head[3] * float3(0.0, -1.0, .45), u_Head[3] * 1.3));
@@ -600,7 +598,7 @@ float trollHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
     teeth = min(teeth, sdCappedCone(p + u_Head[3] * float3(0.25, -0.2, 1.4), u_Head[3] * float3(3.4, .5, .5)));
     combine = min(combine, teeth);
     float eyes = min(sphereSDF(p + u_Head[3] * float3(.3, -0.5, 0.7), u_Head[3] * .2), sphereSDF(p + u_Head[3] * float3(-.3, -0.5, 0.7), u_Head[3] * .2));
-    float monobrow = udBox(mul(rotateMatX(-20.0), (p + u_Head[3] * float3(0.0, -0.7, .65))), u_Head[3] * float3(.6, .2, .2));
+	float monobrow = udBox(rotateX((p + u_Head[3] * float3(0.0, -0.7, .65)), -20.0), u_Head[3] * float3(.6, .2, .2));
     combine = min(min(combine, eyes), monobrow);
     return combine;
 }
@@ -611,9 +609,9 @@ float trollHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
 float clawFootSDF(float3 p, float size) {
     size = size * 2.0;
     float base = udRoundBox(p, size * float3(.6, .6, .3), .001);
-    float fingees = sdConeSection(mul(rotateMatZ(-20.0), (p + size * float3(0.5, -0.9, 0.3))), size * 1.0, size * .3, size * .05);
-    fingees = min(fingees, sdConeSection(mul(rotateMatZ(20.0), (p + size * float3(-0.5, -0.9, 0.3))), size * 1.0, size * .3, size * .05));
-    fingees = min(fingees, sdConeSection(p + size * float3(0.0, -1.1, 0.3), size * 1.0, size * .3, size * .05));
+	float fingees = sdConeSection(rotateZ(p + size * float3(0.5, -0.9, 0.3), -20.0), size, size * .3, size * .05);
+    fingees = min(fingees, sdConeSection(rotateZ(p + size * float3(-0.5, -0.9, 0.3), 20.0), size, size * .3, size * .05));
+    fingees = min(fingees, sdConeSection(p + size * float3(0.0, -1.1, 0.3), size, size * .3, size * .05));
     float combine = smin(base, fingees, .13); // final foot
     return combine;
 }
@@ -623,166 +621,161 @@ float handSDF(float3 p, float size) {
     //float size = u_Head[3] / 1.5;
     //size = 1.0;
     float base = udRoundBox(p, size * float3(.6, .6, .2), .08);
-    float fingee1 = sdConeSection(mul(rotateMatZ(-30.0), (p + size * float3(1.1, -0.7, 0.0))), size * 1.0, size * .5, size * .2);
-    float fingee2 = sdConeSection((p + size * float3(0.45, -1.9, 0.0)), size * 1.0, size * .5, size * .2);
-    float fingee3 = sdConeSection((p + size * float3(-0.45, -1.9, 0.0)), size * 1.0, size * .5, size * .2);
+    float fingee1 = sdConeSection(rotateZ(p + size * float3(1.1, -0.7, 0.0), -30.0), size, size * .5, size * .2);
+    float fingee2 = sdConeSection((p + size * float3(0.45, -1.9, 0.0)), size, size * .5, size * .2);
+    float fingee3 = sdConeSection((p + size * float3(-0.45, -1.9, 0.0)), size, size * .5, size * .2);
     fingee1 = min(fingee1, fingee2);
     fingee1 = min(fingee1, fingee3);
     float combine = smin(base, fingee1, .09);
     return combine;
 }
 
-float appendagesSDF(float3 p, float totalAppen, float u_AppenRad[APPEN_COUNT], float u_AppenBools[APPEN_COUNT], float u_jointLocs[JOINT_LOC_COUNT], float u_LimbLengths[LIMBLEN_COUNT], float u_Rotations[ROT_COUNT]) {
-    //AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
-    
-    float all = MAX_DIST;
-    float angle;
-    //angle to slightly offset each foot
-    float angle1 = -35.0;
-    float angle2 = 35.0;
+float appendagesSDF(float3 p) {
+	AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
 
-    int armsNow = 0;
-    int numAppen = 0;
+	float all = MAX_DIST;
+	float angle = 35.0;
 
-    int startPos = 0;
-    int startRot = 0;
-    for (int i = 0; i < totalAppen; i++) {
-        int thisPos = startPos + (3 * ((u_LimbLengths[i] - 1)));
-        float3 offset = float3(u_jointLocs[thisPos], u_jointLocs[thisPos + 1], u_jointLocs[thisPos + 2]);
+	int armsNow = 0;
+	int numAppen = 0;
 
-        if ((i % 2) == 0) {
-            angle = angle1;
-        }
-        else {
-            angle = angle2;
-        }
-        float foot;
+	int startPos = 0;
+	int startRot = 0;
+	for (int i = 0; i < appenAttr.numAppen; i++) {
+		int thisPos = startPos + (3 * ((limbAttr.limbLengths[i] - 1)));
+		float3 offset = float3(limbAttr.jointLocData[thisPos], limbAttr.jointLocData[thisPos + 1], limbAttr.jointLocData[thisPos + 2]);
 
-        if (u_AppenBools[numAppen] == 1) {
-            armsNow = 1;
-        }
+		if ((i % 2) == 0) {
+			angle *= -1.0;
+		}
+		float foot;
 
-        int thisRot = startRot + (4 * ((u_LimbLengths[i] - 1)));
-        if (armsNow == 0) {
-            float3 rotP = mul(rotateMatZ(angle), mul(rotateMatY(90.0), mul(rotateMatZ(90.0), (p + offset))));
-            foot = clawFootSDF(rotP, u_AppenRad[numAppen]);
-        }
-        else {
-            float3 q = rotateInverseAxisAngle(u_Rotations[thisRot], u_Rotations[thisRot+1], u_Rotations[thisRot+2], u_Rotations[thisRot+3], 
-                p + offset);
-                //mul(float4((p + offset), 1.0), transpose(u_AppenRots[numAppen])).xyz;
-            foot = handSDF(mul(rotateMatZ(180.0), q), u_AppenRad[numAppen]);
-        }
+		if (appenAttr.appenBools[numAppen] == 1) {
+			armsNow = 1;
+		}
 
-        numAppen = numAppen + 1;
-        startPos = thisPos + 3;
-        startRot = thisRot + 4;
+		int thisRot = startRot + (4 * ((limbAttr.limbLengths[i] - 1)));
+		if (armsNow == 0) {
+			float3 rotP = rotateZ((p + offset), 90.0);
+			rotP = rotateY(rotP, 90.0);
+			rotP = rotateZ(rotP, angle);
+			foot = clawFootSDF(rotP, appenAttr.appenRads[numAppen]);
+		}
+		else {
+			float3 q = rotateInverseAxisAngle(rotAttr.rotations[thisRot], rotAttr.rotations[thisRot + 1], rotAttr.rotations[thisRot + 2], rotAttr.rotations[thisRot + 3],
+				p + offset);
+			foot = handSDF(rotateZ(q, 180.0), appenAttr.appenRads[numAppen]);
+		}
 
-        all = min(all, foot);
-    }
+		numAppen = numAppen + 1;
+		startPos = thisPos + 3;
+		startRot = thisRot + 4;
 
-    return all;
+		all = min(all, foot);
+	}
+
+	return all;
 }
 
-float armSDF(float3 p, float u_LimbLengths[LIMBLEN_COUNT], float u_JointLoc[JOINT_LOC_COUNT], float u_JointRad[JOINT_RAD_COUNT], float u_Rotations[ROT_COUNT]) {
+float armSDF(float3 p) {
 
-    int countSegs = 0;
+	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
 
-    float allLimbs = MAX_DIST;
-    int incr = 0;
-    int numLimbs = 0;
-    int jointNum = 0;
-    for (int i = 0; i < LIMBLEN_COUNT; i++) {
-        jointNum += u_LimbLengths[i];
-    }
+	int countSegs = 0;
 
-    //this is for each limb
-    for (int j = 0; j < (jointNum * 3); j = j + incr) {
-        numLimbs++;
+	float allLimbs = MAX_DIST;
+	int incr = 0;
+	int numLimbs = 0;
+	int jointNum = 0;
+	for (int i = 0; i < LIMBLEN_COUNT; i++) {
+		jointNum += limbAttr.limbLengths[i];
+	}
 
-        int count = 0;
+	//this is for each limb
+	for (int j = 0; j < (jointNum * 3); j = j + incr) {
+		numLimbs++;
 
-        // NEED joint number to do the below operations...
+		int count = 0;
 
-        //count is number of joints in this limb
-        count = int(u_LimbLengths[numLimbs - 1]);
+		// NEED joint number to do the below operations...
 
-        float arm = MAX_DIST;
-        // all joint positions for a LIM (jointNum * 3)
-        for (int i = j; i < (j + (count * 3)); i = i + 3) {
-            float3 pTemp = p + float3(u_JointLoc[i], u_JointLoc[i + 1], u_JointLoc[i + 2]);
-            arm = min(arm, sphereSDF(pTemp, u_JointRad[i / 3]));
+		//count is number of joints in this limb
+		count = int(limbAttr.limbLengths[numLimbs - 1]);
 
-        }
+		float arm = MAX_DIST;
+		// all joint positions for a LIM (jointNum * 3)
+		int endJoint = (j + (count * 3));
+		for (int i = j; i < endJoint; i = i + 3) {
+			float3 pTemp = p + float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
+			arm = min(arm, sphereSDF(pTemp, limbAttr.jointRadData[i / 3]));
+		}
 
-        // for 3 * (jointNum(per limb) - 1), each joint until last one
-        float segments = MAX_DIST;
+		// for 3 * (jointNum(per limb) - 1), each joint until last one
+		float segments = MAX_DIST;
 
-        for (i = j; i < (j + ((count - 1) * 3)); i = i + 3) {
-            float3 point0 = float3(u_JointLoc[i], u_JointLoc[i + 1], u_JointLoc[i + 2]);
-            float3 point1 = float3(u_JointLoc[i + 3], u_JointLoc[i + 4], u_JointLoc[i + 5]);
-            float3 midpoint = float3((point0.x + point1.x) / 2.0, (point0.y + point1.y) / 2.0, (point0.z + point1.z) / 2.0);
-            float len = distance(point0, point1);
+		endJoint = (j + ((count - 1) * 3));
+		for (i = j; i < endJoint; i = i + 3) {
+			float3 point0 = float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
+			float3 point1 = float3(limbAttr.jointLocData[i + 3], limbAttr.jointLocData[i + 4], limbAttr.jointLocData[i + 5]);
+			float3 midpoint = float3((point0.x + point1.x) / 2.0, (point0.y + point1.y) / 2.0, (point0.z + point1.z) / 2.0);
+			float len = distance(point0, point1);
 
-            float3 dir = point1 - point0; //dir is correct
+			float3 dir = point1 - point0; //dir is correct
 
-            //float4x4 outMat4 = transpose(u_Rotations[countSegs]);
-            int r = (i / 3) * 4;
-            float3 q = rotateInverseAxisAngle(u_Rotations[r], u_Rotations[r + 1], u_Rotations[r + 2], u_Rotations[r + 3],
-                p + midpoint);
-                //mul(float4((p + midpoint), 1.0), outMat4).xyz;
+			int r = (i / 3) * 4;
+			float3 q = rotateInverseAxisAngle(rotAttr.rotations[r], rotAttr.rotations[r + 1], rotAttr.rotations[r + 2], rotAttr.rotations[r + 3],
+				p + midpoint);
 
-            float part = sdConeSection(q, len / 2.0, u_JointRad[(i + 3) / 3], u_JointRad[i / 3]);
-            segments = min(segments, part);
-            countSegs++;
-        }
+			float part = sdConeSection(q, len / 2.0, limbAttr.jointRadData[(i + 3) / 3], limbAttr.jointRadData[i / 3]);
+			segments = min(segments, part);
+			countSegs++;
+		}
 
-        float combine = smin(arm, segments, .2); // this is one arm
-        allLimbs = min(allLimbs, combine); //merge with all other limbs
+		float combine = smin(arm, segments, .2); // this is one arm
+		allLimbs = min(allLimbs, combine); //merge with all other limbs
 
-        incr = count * 3;
+		incr = count * 3;
+	}
 
-    }
-
-    return allLimbs;
+	return allLimbs;
 }
 
 
-float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPINE_RAD_COUNT]) {
-    float spine = MAX_DIST;
-    for (int i = 0; i < SPINE_LOC_COUNT; i += 3) {
-        if (u_SpineLoc[i] == 0. && u_SpineLoc[i + 1] == 0. && u_SpineLoc[i + 2] == 0.) continue;
-        float3 pTemp = p + float3(u_SpineLoc[i], u_SpineLoc[i + 1], u_SpineLoc[i + 2]);
-        spine = smin(spine, sphereSDF(pTemp, u_SpineRad[i / 3]), 0.06);
-    }
-    return spine;
+float spineSDF(float3 p) {
+	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
+
+	float spine = MAX_DIST;
+	for (int i = 0; i < SPINE_LOC_COUNT; i += 3) {
+		if (headSpineAttr.spineLocData[i] == 0. && headSpineAttr.spineLocData[i + 1] == 0. && headSpineAttr.spineLocData[i + 2] == 0.) continue;
+		float3 pTemp = p + float3(headSpineAttr.spineLocData[i], headSpineAttr.spineLocData[i + 1], headSpineAttr.spineLocData[i + 2]);
+		spine = smin(spine, sphereSDF(pTemp, headSpineAttr.spineRadData[i / 3]), 0.06);
+	}
+	return spine;
 }
 
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
-    HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-    AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
-    LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
-    RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
+	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
 
-    float u_Head[HEAD_COUNT] = headSpineAttr.headData;
-
-    p += float3(0, 0, 0);
-    // p = p * rotateMatY(u_Time) ; // rotates creature
 	float headSDF = 0;
-    if (u_Head[4] == 0) {
-        headSDF = bugHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    }
-    else if (u_Head[4] == 1) {
-        headSDF = dinoHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    }
-    else if (u_Head[4] == 2) {
-        headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
-    }
-    float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-	return headSpine;
-    //return smin(smin(armSDF(p, limbAttr.limbLengths, limbAttr.jointLocData, limbAttr.jointRadData, rotAttr.rotations),
-        //appendagesSDF(p, appenAttr.numAppen, appenAttr.appenRads, appenAttr.appenBools, limbAttr.jointLocData, limbAttr.limbLengths, rotAttr.rotations), .2), headSpine, .1);
+	int headType = headSpineAttr.headData[4];
+	if (headType == 0) {
+		headSDF = bugHeadSDF(p, headSpineAttr.headData);
+	}
+	else if (headType == 1) {
+		headSDF = dinoHeadSDF(p, headSpineAttr.headData);
+	}
+	else if (headType == 2) {
+		headSDF = trollHeadSDF(p, headSpineAttr.headData);
+	}
+	float spine = spineSDF(p);
+	float headSpine = smin(spine, headSDF, .1);
+	float limbs = armSDF(p);
+	float appendages = appendagesSDF(p);
+	return smin(smin(limbs, appendages, .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

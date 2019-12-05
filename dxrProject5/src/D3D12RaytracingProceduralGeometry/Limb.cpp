@@ -42,7 +42,7 @@ void Limb::generate(XMFLOAT3 startPos, float startRadius) {
 		XMFLOAT3 newPos = XMFLOAT3(0, 0, 0);
 		XMStoreFloat3(&newPos, newPosV);
 		if (isLeg && i + 1 >= numJoints) {
-			newPos.y = 1.8;
+			newPos.y = 1.5;
 		}
 		//if (newPos.z < 0.05) newPos.z = 0.1;
 		if (newPos.y < -0.5) newPos.y = -0.5;
