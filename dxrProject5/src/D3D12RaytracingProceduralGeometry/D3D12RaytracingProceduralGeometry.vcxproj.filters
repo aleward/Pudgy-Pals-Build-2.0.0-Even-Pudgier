@@ -93,6 +93,19 @@
     <ClInclude Include="Appendages.h">
       <Filter>Header Files\CreatureGen</Filter>
     </ClInclude>
+    <ClInclude Include="ImguiManager.h" />
+    <ClInclude Include="imgui\dirent_portable.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_dx12.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imguifilesystem.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="imgui\stb_rect_pack.h" />
+    <ClInclude Include="imgui\stb_textedit.h" />
+    <ClInclude Include="imgui\stb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -167,6 +180,11 @@
     <ClCompile Include="Appendages.cpp">
       <Filter>Source Files\CreatureGen</Filter>
     </ClCompile>
+    <ClCompile Include="ImguiManager.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx12.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

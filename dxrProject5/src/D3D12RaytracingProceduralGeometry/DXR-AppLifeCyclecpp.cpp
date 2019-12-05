@@ -86,6 +86,8 @@ void DXProceduralProject::OnRender()
 	auto device = m_deviceResources->GetD3DDevice();
 	auto commandList = m_deviceResources->GetCommandList();
 
+	StartFrameImGUI();
+
 	// Begin frame.
 	m_deviceResources->Prepare();
 	for (auto& gpuTimer : m_gpuTimers)
@@ -131,6 +133,10 @@ void DXProceduralProject::OnDeviceRestored()
 // Handles all keyboard inputs. You can add fun camera controls here if you wish to.
 void DXProceduralProject::OnKeyDown(UINT8 key)
 {
+	if (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantTextInput)
+	{
+		return;
+	}
 	// Store previous values.
 	RaytracingAPI previousRaytracingAPI = m_raytracingAPI;
 	bool previousForceComputeFallback = m_forceComputeFallback;

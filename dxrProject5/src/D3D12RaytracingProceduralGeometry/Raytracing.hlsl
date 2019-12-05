@@ -315,7 +315,6 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
-	
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
     
@@ -342,7 +341,6 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
     rayPayload.color = falloffColor;
-	
 
 	/*float3 hitPosition = HitWorldPosition();
 	float4 aoColor = float4(1, 1, 1, 1);
@@ -362,7 +360,6 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 		if (aoRayHit) aoHits++;
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
-
 	rayPayload.color = aoColor;*/
 }
 

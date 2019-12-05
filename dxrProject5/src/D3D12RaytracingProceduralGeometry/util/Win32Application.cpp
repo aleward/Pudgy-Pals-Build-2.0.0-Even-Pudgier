@@ -174,10 +174,14 @@ void Win32Application::SetWindowZorderToTopMost(bool setToTopMost)
         SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 // LOOKAT-1.1.0: this is where the main app controls the project flow: key inputs, OnUpdate(), OnRender(), etc..
 // Main message handler for the project.
 LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+		return true;
     DXProject* pProject = reinterpret_cast<DXProject*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
     switch (message)
