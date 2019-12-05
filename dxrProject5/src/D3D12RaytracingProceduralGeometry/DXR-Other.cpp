@@ -377,6 +377,8 @@ void DXProceduralProject::CalculateFrameStats()
 
 void DXProceduralProject::InitImGUI()
 {
+	OutputDebugStringA("InitImGUI\n");
+
 	auto device = m_deviceResources->GetD3DDevice();
 	// #IMGUI Setup ImGui binding
 	{
@@ -392,7 +394,8 @@ void DXProceduralProject::InitImGUI()
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-		ImGui_ImplDX12_Init(Win32Application::GetHwnd(), FrameCount, device, DXGI_FORMAT_R8G8B8A8_UNORM,
+		ImGui_ImplWin32_Init(Win32Application::GetHwnd());
+		ImGui_ImplDX12_Init(device, FrameCount, DXGI_FORMAT_R8G8B8A8_UNORM, g_pd3dSrvDescHeap.Get(),
 			g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
 			g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -405,16 +408,19 @@ void DXProceduralProject::InitImGUI()
 
 void DXProceduralProject::RenderImGUI()
 {
+	OutputDebugStringA("RenderImGUI\n");
+
 	auto commandList = m_deviceResources->GetCommandList();
 
 	std::vector<ID3D12DescriptorHeap*> heaps = { g_pd3dSrvDescHeap.Get() };
 	commandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
 	ImGui::Render();
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }
 
 void DXProceduralProject::ShutdownImGUI()
 {
+	OutputDebugStringA("ShutdownImGUI\n");
 	g_pd3dSrvDescHeap.Reset();
 	ImGui_ImplDX12_Shutdown();
 	ImGui::DestroyContext();
@@ -422,6 +428,10 @@ void DXProceduralProject::ShutdownImGUI()
 
 void DXProceduralProject::StartFrameImGUI()
 {
+	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	IM_ASSERT(font != NULL);
+
+	OutputDebugStringA("StartFrameImGUI\n");
 	auto ShowHelpHeader = [&]()
 	{
 		if (ImGui::CollapsingHeader("Help"))
@@ -453,10 +463,13 @@ void DXProceduralProject::StartFrameImGUI()
 	};
 
 	auto commandList = m_deviceResources->GetCommandList();
-	ImGui_ImplDX12_NewFrame(commandList);
+	ImGui_ImplDX12_NewFrame();
+	ImGui::NewFrame();
 
 	//make sure to reset the heap descriptor
 	current_imgui_heap_descriptor = 0;
+
+	ImGui::PushFont(font);
 
 	bool resize = true;
 	ImGui::Begin("DXR Path Tracer", &resize, ImGuiWindowFlags_AlwaysAutoResize);
@@ -466,5 +479,5 @@ void DXProceduralProject::StartFrameImGUI()
 	ShowHeaders();
 
 	ImGui::End();
-
+	ImGui::PopFont();
 }

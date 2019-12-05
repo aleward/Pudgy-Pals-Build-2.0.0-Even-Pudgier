@@ -12,6 +12,7 @@
 #include "RaytracingSceneDefines.h"
 #include "DirectXRaytracingHelper.h"
 #include "PerformanceTimers.h"
+#include "MeshLoader.h"
 
 // Fallback Layer uses DirectX Raytracing if a driver and OS supports it. 
 // Otherwise, it falls back to compute pipeline to emulate raytracing.

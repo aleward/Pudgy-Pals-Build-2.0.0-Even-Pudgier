@@ -174,12 +174,12 @@ PrebuildCheck.bat</Command>
     <ClInclude Include="DirectXRaytracingHelper.h" />
     <ClInclude Include="DXR-Structs.h" />
     <ClInclude Include="Head.h" />
-    <ClInclude Include="ImguiManager.h" />
     <ClInclude Include="imgui\dirent_portable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imguifilesystem.h" />
     <ClInclude Include="imgui\imgui_impl_dx12.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
@@ -187,7 +187,11 @@ PrebuildCheck.bat</Command>
     <ClInclude Include="imgui\stb_rect_pack.h" />
     <ClInclude Include="imgui\stb_textedit.h" />
     <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="include\OBJ_Loader.h" />
+    <ClInclude Include="include\tiny_obj_loader.h" />
     <ClInclude Include="Limb.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="ProceduralPrimitivesLibrary.hlsli" />
     <ClInclude Include="RaytracingSceneDefines.h" />
     <ClInclude Include="RaytracingHlslCompat.h" />
@@ -219,14 +223,16 @@ PrebuildCheck.bat</Command>
     <ClCompile Include="DXR-RootSignature.cpp" />
     <ClCompile Include="DXR-ShaderTable.cpp" />
     <ClCompile Include="Head.cpp" />
-    <ClCompile Include="ImguiManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx12.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Limb.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="DXR-ShaderNames.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshLoader.cpp" />
     <ClCompile Include="Spine.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -257,12 +263,27 @@ PrebuildCheck.bat</Command>
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Head.ts" />
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Limb.ts" />
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Spine.ts" />
+    <None Include="imgui.ini" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\D3D12RaytracingFallback\src\FallbackLayer.vcxproj">
       <Project>{4be280a6-1066-41ca-acdd-6bb7e532508b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="imgui\misc\fonts\Cousine-Regular.ttf" />
+    <Font Include="imgui\misc\fonts\DroidSans.ttf" />
+    <Font Include="imgui\misc\fonts\Karla-Regular.ttf" />
+    <Font Include="imgui\misc\fonts\ProggyClean.ttf" />
+    <Font Include="imgui\misc\fonts\ProggyTiny.ttf" />
+    <Font Include="imgui\misc\fonts\Roboto-Medium.ttf" />
+    <Font Include="misc\fonts\Cousine-Regular.ttf" />
+    <Font Include="misc\fonts\DroidSans.ttf" />
+    <Font Include="misc\fonts\Karla-Regular.ttf" />
+    <Font Include="misc\fonts\ProggyClean.ttf" />
+    <Font Include="misc\fonts\ProggyTiny.ttf" />
+    <Font Include="misc\fonts\Roboto-Medium.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

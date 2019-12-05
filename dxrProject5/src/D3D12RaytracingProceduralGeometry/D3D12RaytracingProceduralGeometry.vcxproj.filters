@@ -93,7 +93,6 @@
     <ClInclude Include="Appendages.h">
       <Filter>Header Files\CreatureGen</Filter>
     </ClInclude>
-    <ClInclude Include="ImguiManager.h" />
     <ClInclude Include="imgui\dirent_portable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -106,6 +105,11 @@
     <ClInclude Include="imgui\stb_rect_pack.h" />
     <ClInclude Include="imgui\stb_textedit.h" />
     <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="MeshLoader.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="include\tiny_obj_loader.h" />
+    <ClInclude Include="include\OBJ_Loader.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -180,11 +184,13 @@
     <ClCompile Include="Appendages.cpp">
       <Filter>Source Files\CreatureGen</Filter>
     </ClCompile>
-    <ClCompile Include="ImguiManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx12.cpp" />
+    <ClCompile Include="MeshLoader.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -203,10 +209,25 @@
     <None Include="..\..\..\..\..\..\2017-2018\CIS 566\Assignment 9\src\bodyParts\Appendage.ts">
       <Filter>Source Files\CreatureGen</Filter>
     </None>
+    <None Include="imgui.ini" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Raytracing.hlsl">
       <Filter>Assets\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="imgui\misc\fonts\Roboto-Medium.ttf" />
+    <Font Include="imgui\misc\fonts\Cousine-Regular.ttf" />
+    <Font Include="imgui\misc\fonts\DroidSans.ttf" />
+    <Font Include="imgui\misc\fonts\Karla-Regular.ttf" />
+    <Font Include="imgui\misc\fonts\ProggyClean.ttf" />
+    <Font Include="imgui\misc\fonts\ProggyTiny.ttf" />
+    <Font Include="misc\fonts\Roboto-Medium.ttf" />
+    <Font Include="misc\fonts\Cousine-Regular.ttf" />
+    <Font Include="misc\fonts\DroidSans.ttf" />
+    <Font Include="misc\fonts\Karla-Regular.ttf" />
+    <Font Include="misc\fonts\ProggyClean.ttf" />
+    <Font Include="misc\fonts\ProggyTiny.ttf" />
   </ItemGroup>
 </Project>
