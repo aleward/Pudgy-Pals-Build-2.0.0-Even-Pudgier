@@ -4097,12 +4097,16 @@ void ImGui::Render()
     for (int n = 0; n != g.Windows.Size; n++)
     {
         ImGuiWindow* window = g.Windows[n];
-        if (IsWindowActiveAndVisible(window) && (window->Flags & ImGuiWindowFlags_ChildWindow) == 0 && window != windows_to_render_top_most[0] && window != windows_to_render_top_most[1])
-            AddRootWindowToDrawData(window);
+		if (IsWindowActiveAndVisible(window) && (window->Flags & ImGuiWindowFlags_ChildWindow) == 0 && window != windows_to_render_top_most[0] && window != windows_to_render_top_most[1]) {
+			AddRootWindowToDrawData(window);
+			OutputDebugStringA("Draw window 1\n");
+		}
     }
     for (int n = 0; n < IM_ARRAYSIZE(windows_to_render_top_most); n++)
-        if (windows_to_render_top_most[n] && IsWindowActiveAndVisible(windows_to_render_top_most[n])) // NavWindowingTarget is always temporarily displayed as the top-most window
-            AddRootWindowToDrawData(windows_to_render_top_most[n]);
+		if (windows_to_render_top_most[n] && IsWindowActiveAndVisible(windows_to_render_top_most[n])) { // NavWindowingTarget is always temporarily displayed as the top-most window
+			AddRootWindowToDrawData(windows_to_render_top_most[n]);
+			OutputDebugStringA("Draw window 2\n");
+		}
     g.DrawDataBuilder.FlattenIntoSingleLayer();
 
     // Draw software mouse cursor if requested

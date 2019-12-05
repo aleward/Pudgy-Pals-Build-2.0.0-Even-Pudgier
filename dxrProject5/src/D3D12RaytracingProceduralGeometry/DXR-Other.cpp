@@ -224,6 +224,8 @@ void DXProceduralProject::UpdateForSizeChange(UINT width, UINT height)
     DXProject::UpdateForSizeChange(width, height);
 }
 
+
+
 // Copy the raytracing output to the backbuffer.
 void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
 {
@@ -464,6 +466,7 @@ void DXProceduralProject::StartFrameImGUI()
 
 	auto commandList = m_deviceResources->GetCommandList();
 	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
 	//make sure to reset the heap descriptor
