@@ -33,7 +33,6 @@ void DXProceduralProject::BuildPlaneGeometry()
     {
         3,1,0,
         2,1,3,
-
     };
 
     // Cube vertices positions and corresponding triangle normals.

@@ -61,6 +61,8 @@ void DXProceduralProject::DoRaytracing()
 	// Hint: look at CreateRootSignatures() in DXR-Pipeline.cpp.
 	commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::VertexBuffers, m_indexBuffer.gpuDescriptorHandle);
 
+	commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::TextureBuffer, m_textureBuffer.gpuDescriptorHandle);
+
 	// TODO-2.8: Bind the OutputView (basically m_raytracingOutputResourceUAVGpuDescriptor). Very similar to the Index/Vertex buffer.
 	commandList->SetComputeRootDescriptorTable(GlobalRootSignature::Slot::OutputView, m_raytracingOutputResourceUAVGpuDescriptor);
 

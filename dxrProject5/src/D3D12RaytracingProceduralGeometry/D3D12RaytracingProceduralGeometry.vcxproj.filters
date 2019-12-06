@@ -93,7 +93,6 @@
     <ClInclude Include="Appendages.h">
       <Filter>Header Files\CreatureGen</Filter>
     </ClInclude>
-    <ClInclude Include="ImguiManager.h" />
     <ClInclude Include="imgui\dirent_portable.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -180,7 +179,6 @@
     <ClCompile Include="Appendages.cpp">
       <Filter>Source Files\CreatureGen</Filter>
     </ClCompile>
-    <ClCompile Include="ImguiManager.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />

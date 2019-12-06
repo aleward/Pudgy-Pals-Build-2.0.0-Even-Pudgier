@@ -80,6 +80,10 @@ private:
     StructuredBuffer<LimbInfoBuffer> m_limbBuffer;
     StructuredBuffer<RotationInfoBuffer> m_rotBuffer;
 
+	D3DBuffer m_textureBuffer;
+	ID3D12Resource* m_textureBufferUploadHeap;
+	D3D12_RESOURCE_DESC m_textureDesc;
+
     // Local root constant buffers
     PrimitiveConstantBuffer m_planeMaterialCB;
     PrimitiveConstantBuffer m_aabbMaterialCB[IntersectionShaderType::TotalPrimitiveCount];
@@ -136,6 +140,7 @@ private:
 	void CreateConstantBuffers();
 	void CreateAABBPrimitiveAttributesBuffers();
     void CreateCreatureBuffers();
+	void CreateTextureBuffers(std::string file);
 	void UpdateCameraMatrices();
 	void UpdateAABBPrimitiveAttributes(float animationTime);
     void UpdateCreatureAttributes();
@@ -195,14 +200,4 @@ private:
     void CalculateFrameStats();
 	void EnableDirectXRaytracing(IDXGIAdapter1* adapter);
 	void ParseCommandLineArgs(WCHAR* argv[], int argc);
-
-	// ImGUI
-#define HEAP_DESCRIPTOR_SIZE (10000)
-	ComPtr<ID3D12DescriptorHeap> g_pd3dSrvDescHeap;
-	void InitImGUI();
-	void StartFrameImGUI();
-	void RenderImGUI();
-	void ShutdownImGUI();
-
-	int current_imgui_heap_descriptor = 0;
 };

@@ -18,6 +18,7 @@ namespace GlobalRootSignature {
             LimbBuffer,
             RotBuffer,
             VertexBuffers,
+			TextureBuffer,
             Count
         };
     }
