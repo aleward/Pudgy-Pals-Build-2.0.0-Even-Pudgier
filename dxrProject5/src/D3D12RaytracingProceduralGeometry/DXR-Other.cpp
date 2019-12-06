@@ -224,6 +224,8 @@ void DXProceduralProject::UpdateForSizeChange(UINT width, UINT height)
     DXProject::UpdateForSizeChange(width, height);
 }
 
+
+
 // Copy the raytracing output to the backbuffer.
 void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
 {
@@ -236,12 +238,24 @@ void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
     commandList->ResourceBarrier(ARRAYSIZE(preCopyBarriers), preCopyBarriers);
 
     commandList->CopyResource(renderTarget, m_raytracingOutput.Get());
+	RenderImGUI();
 
     D3D12_RESOURCE_BARRIER postCopyBarriers[2];
     postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
     postCopyBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(m_raytracingOutput.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
     commandList->ResourceBarrier(ARRAYSIZE(postCopyBarriers), postCopyBarriers);
+
+	m_deviceResources->ExecuteCommandList();
+
+	m_deviceResources->WaitForGpu();
+
+	commandList->Reset(m_deviceResources->GetCommandAllocator(), nullptr);
+
+	D3D12_RESOURCE_BARRIER ImGUIBarriers[1];
+	ImGUIBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	commandList->ResourceBarrier(ARRAYSIZE(ImGUIBarriers), ImGUIBarriers);
 }
 
 // Create resources that are dependent on the size of the main window.
@@ -358,4 +372,115 @@ void DXProceduralProject::CalculateFrameStats()
             << L"    GPU[" << m_deviceResources->GetAdapterID() << L"]: " << m_deviceResources->GetAdapterDescription();
         SetCustomWindowText(windowText.str().c_str());
     }
+<<<<<<< HEAD
+=======
+}
+
+void DXProceduralProject::InitImGUI()
+{
+	OutputDebugStringA("InitImGUI\n");
+
+	auto device = m_deviceResources->GetD3DDevice();
+	// #IMGUI Setup ImGui binding
+	{
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			desc.NumDescriptors = HEAP_DESCRIPTOR_SIZE;
+			desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&g_pd3dSrvDescHeap)));
+		}
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+		ImGui_ImplWin32_Init(Win32Application::GetHwnd());
+		ImGui_ImplDX12_Init(device, FrameCount, DXGI_FORMAT_R8G8B8A8_UNORM, g_pd3dSrvDescHeap.Get(),
+			g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+			g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
+
+		// Setup style
+		ImGui::StyleColorsDark();
+		ImGui_ImplDX12_CreateDeviceObjects();
+	}
+}
+
+
+void DXProceduralProject::RenderImGUI()
+{
+	OutputDebugStringA("RenderImGUI\n");
+
+	auto commandList = m_deviceResources->GetCommandList();
+
+	std::vector<ID3D12DescriptorHeap*> heaps = { g_pd3dSrvDescHeap.Get() };
+	commandList->SetDescriptorHeaps(static_cast<UINT>(heaps.size()), heaps.data());
+	ImGui::Render();
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+}
+
+void DXProceduralProject::ShutdownImGUI()
+{
+	OutputDebugStringA("ShutdownImGUI\n");
+	g_pd3dSrvDescHeap.Reset();
+	ImGui_ImplDX12_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void DXProceduralProject::StartFrameImGUI()
+{
+	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	IM_ASSERT(font != NULL);
+
+	OutputDebugStringA("StartFrameImGUI\n");
+	auto ShowHelpHeader = [&]()
+	{
+		if (ImGui::CollapsingHeader("Help"))
+		{
+			ImGui::BulletText("Double-click on title bar to collapse window.");
+			ImGui::BulletText("Click and drag on lower right corner to resize window\n(double-click to auto fit window to its contents).");
+			ImGui::BulletText("Click and drag on any empty space to move window.");
+			ImGui::BulletText("TAB/SHIFT+TAB to cycle through keyboard editable fields.");
+			ImGui::BulletText("CTRL+Click on a slider or drag box to input value as text.");
+			if (ImGui::GetIO().FontAllowUserScaling)
+				ImGui::BulletText("CTRL+Mouse Wheel to zoom window contents.");
+			ImGui::BulletText("Mouse Wheel to scroll.");
+			ImGui::BulletText("While editing text:\n");
+			ImGui::Indent();
+			ImGui::BulletText("Hold SHIFT or use mouse to select text.");
+			ImGui::BulletText("CTRL+Left/Right to word jump.");
+			ImGui::BulletText("CTRL+A or double-click to select all.");
+			ImGui::BulletText("CTRL+X,CTRL+C,CTRL+V to use clipboard.");
+			ImGui::BulletText("CTRL+Z,CTRL+Y to undo/redo.");
+			ImGui::BulletText("ESCAPE to revert.");
+			ImGui::BulletText("You can apply arithmetic operators +,*,/ on numerical values.\nUse +- to subtract.");
+			ImGui::Unindent();
+		}
+	};
+
+	auto ShowHeaders = [&]()
+	{
+		ShowHelpHeader();
+	};
+
+	auto commandList = m_deviceResources->GetCommandList();
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	//make sure to reset the heap descriptor
+	current_imgui_heap_descriptor = 0;
+
+	ImGui::PushFont(font);
+
+	bool resize = true;
+	ImGui::Begin("DXR Path Tracer", &resize, ImGuiWindowFlags_AlwaysAutoResize);
+
+	ImGui::Text("ImGUI version: (%s)", IMGUI_VERSION);
+
+	ShowHeaders();
+
+	ImGui::End();
+	ImGui::PopFont();
+>>>>>>> 7244d63afa91991c5ab9f309d03b86418366589e
 }

@@ -42,6 +42,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imguifilesystem.h"
+#include "imgui/imgui_impl_win32.h"
 
 #include "DXR-Structs.h"
 

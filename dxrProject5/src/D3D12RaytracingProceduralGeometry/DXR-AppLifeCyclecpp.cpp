@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
+#include "Mesh.h"
 
 using namespace std;
 using namespace DX;
@@ -32,6 +33,8 @@ void DXProceduralProject::OnInit()
 	CreateWindowSizeDependentResources();
 
     UpdateCreatureAttributes();
+
+	//std::vector<Model::Mesh> meshes = Model::MeshLoader::load_obj();
 }
 
 // LOOKAT-1.8.0: Update frame-based values (e.g. camera effects, light, animation time)
@@ -46,12 +49,15 @@ void DXProceduralProject::OnUpdate()
 	// Rotate the camera around Y axis.
 	if (m_animateCamera)
 	{
-		float secondsToRotateAround = 48.0f;
+		float secondsToRotateAround = 10.0f;
 		float angleToRotateBy = 360.0f * (elapsedTime / secondsToRotateAround);
 		XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(angleToRotateBy));
-		m_eye = XMVector3Transform(m_eye, rotate);
+		XMVECTOR diff = XMVectorSubtract(m_eye, m_at);
+		diff = XMVector3Transform(diff, rotate);
+		//m_eye = XMVector3Transform(m_eye, rotate);
 		m_up = XMVector3Transform(m_up, rotate);
-		m_at = XMVector3Transform(m_at, rotate);
+		//m_at = XMVector3Transform(m_at, rotate);
+		m_eye = XMVectorAdd(diff, m_at);
 		UpdateCameraMatrices();
 	}
 

@@ -806,7 +806,7 @@ float sceneSDF(float3 p) {
 	float headSpine = smin(spine, headSDF, .1);
 	float limbs = armSDF(p);
 	float appendages = appendagesSDF(p);
-	return smin(smin(limbs, appendages, .2), headSpine, .1);
+	return headSpine; //smin(smin(limbs, appendages, .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
