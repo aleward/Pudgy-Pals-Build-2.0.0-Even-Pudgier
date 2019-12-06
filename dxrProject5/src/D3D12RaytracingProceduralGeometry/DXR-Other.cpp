@@ -372,8 +372,6 @@ void DXProceduralProject::CalculateFrameStats()
             << L"    GPU[" << m_deviceResources->GetAdapterID() << L"]: " << m_deviceResources->GetAdapterDescription();
         SetCustomWindowText(windowText.str().c_str());
     }
-<<<<<<< HEAD
-=======
 }
 
 void DXProceduralProject::InitImGUI()
@@ -482,5 +480,4 @@ void DXProceduralProject::StartFrameImGUI()
 
 	ImGui::End();
 	ImGui::PopFont();
->>>>>>> 7244d63afa91991c5ab9f309d03b86418366589e
 }
