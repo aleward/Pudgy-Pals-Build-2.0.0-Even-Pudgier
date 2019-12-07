@@ -14,6 +14,9 @@ void DXProceduralProject::InitializeScene()
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
 
+	m_numLimbs = 2;
+	m_headType = -1;
+
 	// Setup materials.
 	{
 		// Function pointer that sets up material properties for a procedural primitive
@@ -218,10 +221,51 @@ void DXProceduralProject::CreateCreatureBuffers()
 
 void DXProceduralProject::UpdateCreatureAttributes()
 {
-    auto SetCreatureBuffers = [&](UINT primitiveIndex)
+	auto ResetBuffers = [&](UINT primitiveIndex)
+	{
+		for (int h = 0; h < HEAD_COUNT; h++)
+		{
+			m_headSpineBuffer[primitiveIndex].headData[h] = 0;
+		}
+		for (int sl = 0; sl < SPINE_LOC_COUNT; sl++)
+		{
+			m_headSpineBuffer[primitiveIndex].spineLocData[sl] = 0;
+		}
+		for (int sr = 0; sr < SPINE_RAD_COUNT; sr++)
+		{
+			m_headSpineBuffer[primitiveIndex].spineRadData[sr] = 0;
+		}
+
+		m_appenBuffer[primitiveIndex].numAppen = 0;
+		for (int a = 0; a < APPEN_COUNT; a++)
+		{
+			m_appenBuffer[primitiveIndex].appenBools[a] = 0;
+			m_appenBuffer[primitiveIndex].appenRads[a] = 0;
+		}
+
+		for (int l = 0; l < LIMBLEN_COUNT; l++)
+		{
+			m_limbBuffer[primitiveIndex].limbLengths[l] = 0;
+		}
+		for (int jl = 0; jl < JOINT_LOC_COUNT; jl++)
+		{
+			m_limbBuffer[primitiveIndex].jointLocData[jl] = 0;
+		}
+		for (int jr = 0; jr < JOINT_RAD_COUNT; jr++)
+		{
+			m_limbBuffer[primitiveIndex].jointRadData[jr] = 0;
+		}
+
+		for (int r = 0; r < ROT_COUNT; r++)
+		{
+			m_rotBuffer[primitiveIndex].rotations[r] = 0;
+		}
+	};
+	
+	auto SetCreatureBuffers = [&](UINT primitiveIndex)
     {
         Creature *creature = new Creature();
-        creature->generate(0, 2, -1);
+        creature->generate(0, m_numLimbs, m_headType);
 
         for (int h = 0; h < min(HEAD_COUNT, creature->head->headData.size()); h++)
         {
@@ -274,6 +318,7 @@ void DXProceduralProject::UpdateCreatureAttributes()
     // Volumetric primitives.
     {
         using namespace VolumetricPrimitive;
+		ResetBuffers(Metaballs);
         SetCreatureBuffers(Metaballs);
         //offset += VolumetricPrimitive::Count;
     }
@@ -336,7 +381,7 @@ void DXProceduralProject::CreateTextureBuffers(std::string file)
 		nullptr, IID_PPV_ARGS(&m_textureBuffer.resource));
 
 	UINT64 textureUploadBufferSize = width*height*stride;
-	//device->GetCopyableFootprints(&m_textureDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
+	device->GetCopyableFootprints(&m_textureDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
 
 	device->CreateCommittedResource(&uploadHeapProps, D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
@@ -390,6 +435,20 @@ void DXProceduralProject::CreateTextureBuffers(std::string file)
 
 	m_deviceResources->ExecuteCommandList();
 	m_deviceResources->WaitForGpu();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = m_textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	
+
+	UINT descriptorIndex = AllocateDescriptor(&m_textureBuffer.cpuDescriptorHandle);
+	// Tell the device where to find the data, how to use it (descriptor), where it lives on the CPU.
+	device->CreateShaderResourceView(m_textureBuffer.resource.Get(), &srvDesc, m_textureBuffer.cpuDescriptorHandle);
+
+	// Give back a GPU pointer/handle for this descriptor.
+	m_textureBuffer.gpuDescriptorHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_descriptorHeap->GetGPUDescriptorHandleForHeapStart(), descriptorIndex, m_descriptorSize);
 
 	auto& attributes = m_aabbMaterialCB[0];
 	attributes.hasTexture = true;

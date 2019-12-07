@@ -83,9 +83,6 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     CreateCreatureBuffers();
 
-	//CreateTextureBuffers(std::string("../../resources/textures/red.jpg"));
-		//brown-fur-texture.jpg"));
-
     // Build shader tables, which define shaders and their local root arguments.
     BuildShaderTables();
 
@@ -238,7 +235,7 @@ void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
     commandList->ResourceBarrier(ARRAYSIZE(preCopyBarriers), preCopyBarriers);
 
     commandList->CopyResource(renderTarget, m_raytracingOutput.Get());
-	RenderImGUI();
+	//RenderImGUI();
 
     D3D12_RESOURCE_BARRIER postCopyBarriers[2];
     postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
@@ -303,6 +300,9 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_indexBuffer.resource.Reset();
     m_vertexBuffer.resource.Reset();
     m_aabbBuffer.resource.Reset();
+
+	//m_textureBuffer.resource.Reset();
+	//m_textureBufferUploadHeap->Release();
 
     ResetComPtrArray(&m_bottomLevelAS);
     m_topLevelAS.Reset();
