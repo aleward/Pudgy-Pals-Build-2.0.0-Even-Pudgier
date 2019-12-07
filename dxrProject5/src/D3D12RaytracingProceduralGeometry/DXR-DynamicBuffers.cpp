@@ -61,7 +61,7 @@ void DXProceduralProject::InitializeScene()
 	{
 		// Initialize the view and projection inverse matrices.
 		m_eye = { -10.0f, 10.0f, -25.0f, 1.0f };
-		m_at = { 10.0f, 10.0f, 10.0f, 1.0f };
+		m_at = { 13.0f, 10.0f, 11.0f, 1.0f };
 		XMVECTOR right = { 1.0f, 0.0f, 0.0f, 0.0f };
 
 		XMVECTOR direction = XMVector4Normalize(m_at - m_eye);

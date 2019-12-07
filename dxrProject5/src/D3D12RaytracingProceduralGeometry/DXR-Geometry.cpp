@@ -44,9 +44,13 @@ void DXProceduralProject::BuildPlaneGeometry()
         { XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 2..
         { XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 3
     };
-	std::vector<Model::Mesh> meshes = Model::MeshLoader::load_obj("objects/", "suzanne.obj");
+	std::vector<Model::Mesh> meshes = Model::MeshLoader::load_obj("objects/", "plane.obj");
 	std::vector<Model::Index> indexVector = meshes[0].vertex_indices;
 	std::vector<Model::Vertex> vertexVector = meshes[0].vertices;
+	std::stringstream ss;
+	ss << "Num vertices is " << vertexVector.size() << endl;
+	OutputDebugStringA(ss.str().c_str());
+	//OutputDebugStringA("Num vertices is %d", vertexVector.size());
 	Index *indices = new Index[indexVector.size()];
 	Vertex *vertices = new Vertex[vertexVector.size()];
 	for (int i = 0; i < vertexVector.size(); i++) {
@@ -55,7 +59,9 @@ void DXProceduralProject::BuildPlaneGeometry()
 		newV.position = v.position;
 		newV.normal = v.normal;
 		vertices[i] = newV;
-		indices[i] = indexVector[i];
+	}
+	for (int j = 0; j < indexVector.size(); j++) {
+		indices[j] = indexVector[j];
 	}
 
     /*AllocateUploadBuffer(device, indices, sizeof(indices), &m_indexBuffer.resource);
@@ -70,7 +76,11 @@ void DXProceduralProject::BuildPlaneGeometry()
 
 	// Vertex buffer is passed to the shader along with index buffer as a descriptor range.
 	UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, sizeof(indices2) / 4, 0);
-	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, ARRAYSIZE(vertices2), sizeof(vertices2[0]));
+	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, sizeof(vertices2) / sizeof(vertices2[0]), sizeof(vertices2[0]));
+
+	std::stringstream ss2;
+	ss2 << "Num vertices is " << ARRAYSIZE(vertices2) << ARRAYSIZE(indices2) << endl;
+	OutputDebugStringA(ss2.str().c_str());
 
 	free(vertices);
 	free(indices);
