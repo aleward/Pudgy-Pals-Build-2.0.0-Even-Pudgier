@@ -172,7 +172,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	// Bottom-level AS for the plane instance.
 	{
 		// Make the plane a little larger than the actual number of primitives in each dimension.
-		const XMUINT3 NUM_AABB = XMUINT3(700, 1, 700);
+		const XMUINT3 NUM_AABB = XMUINT3(1, 1, 1);
 		const XMFLOAT3 fWidth = XMFLOAT3(
 			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
 			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
