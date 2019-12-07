@@ -36,6 +36,23 @@ StructuredBuffer<AppendageInfoBuffer> g_appenBuffer: register(t5, space0);
 StructuredBuffer<LimbInfoBuffer> g_limbBuffer: register(t6, space0);
 StructuredBuffer<RotationInfoBuffer> g_rotBuffer: register(t7, space0);
 
+Texture2D g_texture: register(t0, space1);
+
+// Global variables
+static float headData[HEAD_COUNT];
+static float spineLocData[SPINE_LOC_COUNT];
+static float spineRadData[SPINE_RAD_COUNT];
+
+static float numAppendages;
+static float appenBools[APPEN_COUNT];
+static float appenRads[APPEN_COUNT];
+
+static float limbLengths[LIMBLEN_COUNT];
+static float jointLocData[JOINT_LOC_COUNT];
+static float jointRadData[JOINT_RAD_COUNT];
+
+static float rotations[ROT_COUNT];
+
 //***************************************************************************
 //*********************------ Utilities. -------*****************************
 //***************************************************************************
@@ -301,6 +318,14 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 	return float3(x, y, z);
 }
 
+float3 triplanar(float scale, float3 norm, float3 pos) {
+	float texRes = l_materialCB.textureResolution;
+	float3 xy = g_texture.Load(int3(floor(pos.xy * texRes), 0.0)).rgb;
+	float3 xz = g_texture.Load(int3(floor(pos.xz * texRes), 0.0)).rgb;
+	float3 yz = g_texture.Load(int3(floor(pos.yz * texRes), 0.0)).rgb;
+	return lerp(lerp(xz, yz, norm.x), xy, norm.z);
+}
+
 // TODO: Write the closest hit shader for a procedural geometry.
 // You suppose this is called after the ray successfully iterated over all geometries and determined it intersected with some AABB.
 // The attributes of the AABB are in attr (basically the normal)
@@ -315,6 +340,7 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 [shader("closesthit")]
 void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitiveAttributes attr)
 {
+	
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
     
@@ -322,25 +348,39 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
     bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
 
-    // Reflected component ray.
+	float4 albedo = l_materialCB.albedo;
+	/*if (l_materialCB.hasTexture)
+	{
+		//albedo = float4(triplanar(1.0, attr.normal, hitPosition), 1.0);
+		float texRes = l_materialCB.textureResolution;
+		albedo = g_texture.Load(int3(10.0, 10.0, 10.0));
+	}
+	else
+	{
+		albedo = l_materialCB.albedo;
+	}*/
+	
+	
+	// Reflected component ray.
     float4 reflectedColor = float4(0, 0, 0, 0);
     if (l_materialCB.reflectanceCoef > 0.001)
     {
         Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), attr.normal) };
         float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
 
-        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, l_materialCB.albedo.xyz);
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), attr.normal, albedo.xyz);
         reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
     }
 
     // Calculate final color with phong lighting
-    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 phongColor = CalculatePhongLighting(albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
     float4 color = (phongColor + reflectedColor);
 
     float t = 1.0f - min(RayTCurrent() / 500.0f, 1.0f);
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
-    rayPayload.color = falloffColor;
+	rayPayload.color = falloffColor;
+	
 
 	/*float3 hitPosition = HitWorldPosition();
 	float4 aoColor = float4(1, 1, 1, 1);
@@ -360,6 +400,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 		if (aoRayHit) aoHits++;
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
+
 	rayPayload.color = aoColor;*/
 }
 
@@ -548,57 +589,57 @@ float sdConeSection(in float3 p, in float h, in float r1, in float r2) {
 }
 
 //~~~~~HEAD SDFs~~~~~///
-float bugHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+float bugHeadSDF(float3 p) {
+	p = p + float3(headData[0], headData[1], headData[2]);
 	p = rotateY(p, -90.0);
-    float base = sphereSDF(p, u_Head[3]);
-    float eyes = min(sphereSDF(p + u_Head[3] * float3(0.55, -0.35, -.71), u_Head[3] * .2), sphereSDF(p + u_Head[3] * float3(-0.55, -0.35, -.71), u_Head[3] * .2));
-    float mandibleBase = sdCappedCylinder(p + u_Head[3] * float3(0.0, 0.001, -.9), u_Head[3] * float2(1.2, 0.1));
-    float mandibles = max(mandibleBase, -sphereSDF(p + u_Head[3] * float3(0.0, 0.0, -0.60), .7 * u_Head[3]));
-    mandibles = max(mandibles, -sphereSDF(p + u_Head[3] * float3(0.0, 0.0, -1.70), .7 * u_Head[3]));
+    float base = sphereSDF(p, headData[3]);
+    float eyes = min(sphereSDF(p + headData[3] * float3(0.55, -0.35, -.71), headData[3] * .2), sphereSDF(p + headData[3] * float3(-0.55, -0.35, -.71), headData[3] * .2));
+    float mandibleBase = sdCappedCylinder(p + headData[3] * float3(0.0, 0.001, -.9), headData[3] * float2(1.2, 0.1));
+    float mandibles = max(mandibleBase, -sphereSDF(p + headData[3] * float3(0.0, 0.0, -0.60), .7 * headData[3]));
+    mandibles = max(mandibles, -sphereSDF(p + headData[3] * float3(0.0, 0.0, -1.70), .7 * headData[3]));
     float head = smin(min(base, eyes), mandibles, .05);
     return head;
 }
 
-float dinoHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+float dinoHeadSDF(float3 p) {
+	p = p + float3(headData[0], headData[1], headData[2]);
 	p = rotateY(p, -90.0);
-    float base = sphereSDF(p, u_Head[3]);
-    float topJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.3, -1.4), u_Head[3] * 1.08);
-    topJaw = max(topJaw, -cubeSDF(p + u_Head[3] * float3(0.0, 1.4, -1.4), u_Head[3] * 1.2));
-    float bottomJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.6, -1.0), u_Head[3] * .7);
-    bottomJaw = max(bottomJaw, -cubeSDF(rotateX((p + u_Head[3] * float3(0.0, -.4, -1.7)), 45.0), u_Head[3] * 1.1));
+    float base = sphereSDF(p, headData[3]);
+    float topJaw = sphereSDF(p + headData[3] * float3(0.0, 0.3, -1.4), headData[3] * 1.08);
+    topJaw = max(topJaw, -cubeSDF(p + headData[3] * float3(0.0, 1.4, -1.4), headData[3] * 1.2));
+    float bottomJaw = sphereSDF(p + headData[3] * float3(0.0, 0.6, -1.0), headData[3] * .7);
+    bottomJaw = max(bottomJaw, -cubeSDF(rotateX((p + headData[3] * float3(0.0, -.4, -1.7)), 45.0), headData[3] * 1.1));
     float combine = smin(base, topJaw, .04);
     combine = smin(combine, bottomJaw, .08);
 
-    float eyes = min(sphereSDF(p + u_Head[3] * float3(.9, 0.0, 0.0), u_Head[3] * .3), sphereSDF(p + u_Head[3] * float3(-0.9, 0.0, 0.0), u_Head[3] * .3));
+    float eyes = min(sphereSDF(p + headData[3] * float3(.9, 0.0, 0.0), headData[3] * .3), sphereSDF(p + headData[3] * float3(-0.9, 0.0, 0.0), headData[3] * .3));
     combine = min(combine, eyes);
-    float brows = min(udBox(rotateX((p + u_Head[3] * float3(.85, -0.35, 0.0)), -20.0), u_Head[3] * float3(.3, .2, .5)),
-        udBox(rotateX((p + u_Head[3] * float3(-0.85, -0.35, 0.0)), -20.0), u_Head[3] * float3(.3, .2, .5)));
+    float brows = min(udBox(rotateX((p + headData[3] * float3(.85, -0.35, 0.0)), -20.0), headData[3] * float3(.3, .2, .5)),
+        udBox(rotateX((p + headData[3] * float3(-0.85, -0.35, 0.0)), -20.0), headData[3] * float3(.3, .2, .5)));
     combine = min(combine, brows);
 
-    float teeth = sdCappedCone(rotateX((p + u_Head[3] * float3(0.4, 0.7, -1.8)), 180.0), u_Head[3] * float3(3.0, 1.0, 1.0));
-    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(-0.4, 0.7, -1.8)), 180.0), u_Head[3] * float3(3.0, 1.0, 1.0)));
-    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(-0.4, 0.7, -1.3)), 180.0), u_Head[3] * float3(2.7, 1.0, 1.0)));
-    teeth = min(teeth, sdCappedCone(rotateX((p + u_Head[3] * float3(0.4, 0.7, -1.3)), 180.0), u_Head[3] * float3(2.7, 1.0, 1.0)));
+    float teeth = sdCappedCone(rotateX((p + headData[3] * float3(0.4, 0.7, -1.8)), 180.0), headData[3] * float3(3.0, 1.0, 1.0));
+    teeth = min(teeth, sdCappedCone(rotateX((p + headData[3] * float3(-0.4, 0.7, -1.8)), 180.0), headData[3] * float3(3.0, 1.0, 1.0)));
+    teeth = min(teeth, sdCappedCone(rotateX((p + headData[3] * float3(-0.4, 0.7, -1.3)), 180.0), headData[3] * float3(2.7, 1.0, 1.0)));
+    teeth = min(teeth, sdCappedCone(rotateX((p + headData[3] * float3(0.4, 0.7, -1.3)), 180.0), headData[3] * float3(2.7, 1.0, 1.0)));
     combine = min(combine, teeth);
     return combine;
 }
 
-float trollHeadSDF(float3 p, float u_Head[HEAD_COUNT]) {
-	p = p + float3(u_Head[0], u_Head[1], u_Head[2]);
+float trollHeadSDF(float3 p) {
+	p = p + float3(headData[0], headData[1], headData[2]);
 	p = rotateY(p, -270.0);
-    float base = sphereSDF(p, u_Head[3]);
-    float bottomJaw = sphereSDF(p + u_Head[3] * float3(0.0, 0.3, .62), u_Head[3] * 1.08);
-    bottomJaw = max(bottomJaw, -cubeSDF(p + u_Head[3] * float3(0.0, -1.0, .45), u_Head[3] * 1.3));
+    float base = sphereSDF(p, headData[3]);
+    float bottomJaw = sphereSDF(p + headData[3] * float3(0.0, 0.3, .62), headData[3] * 1.08);
+    bottomJaw = max(bottomJaw, -cubeSDF(p + headData[3] * float3(0.0, -1.0, .45), headData[3] * 1.3));
     float combine = smin(base, bottomJaw, .04);
-    float teeth = sdCappedCone(p + u_Head[3] * float3(0.65, -0.7, 1.1), u_Head[3] * float3(4.0, 1.0, 1.0));
-    teeth = min(teeth, sdCappedCone(p + u_Head[3] * float3(-0.65, -0.7, 1.1), u_Head[3] * float3(4.0, 1.0, 1.0)));
-    teeth = min(teeth, sdCappedCone(p + u_Head[3] * float3(-0.25, -0.2, 1.4), u_Head[3] * float3(3.4, .5, .5)));
-    teeth = min(teeth, sdCappedCone(p + u_Head[3] * float3(0.25, -0.2, 1.4), u_Head[3] * float3(3.4, .5, .5)));
+    float teeth = sdCappedCone(p + headData[3] * float3(0.65, -0.7, 1.1), headData[3] * float3(4.0, 1.0, 1.0));
+    teeth = min(teeth, sdCappedCone(p + headData[3] * float3(-0.65, -0.7, 1.1), headData[3] * float3(4.0, 1.0, 1.0)));
+    teeth = min(teeth, sdCappedCone(p + headData[3] * float3(-0.25, -0.2, 1.4), headData[3] * float3(3.4, .5, .5)));
+    teeth = min(teeth, sdCappedCone(p + headData[3] * float3(0.25, -0.2, 1.4), headData[3] * float3(3.4, .5, .5)));
     combine = min(combine, teeth);
-    float eyes = min(sphereSDF(p + u_Head[3] * float3(.3, -0.5, 0.7), u_Head[3] * .2), sphereSDF(p + u_Head[3] * float3(-.3, -0.5, 0.7), u_Head[3] * .2));
-	float monobrow = udBox(rotateX((p + u_Head[3] * float3(0.0, -0.7, .65)), -20.0), u_Head[3] * float3(.6, .2, .2));
+    float eyes = min(sphereSDF(p + headData[3] * float3(.3, -0.5, 0.7), headData[3] * .2), sphereSDF(p + headData[3] * float3(-.3, -0.5, 0.7), headData[3] * .2));
+	float monobrow = udBox(rotateX((p + headData[3] * float3(0.0, -0.7, .65)), -20.0), headData[3] * float3(.6, .2, .2));
     combine = min(min(combine, eyes), monobrow);
     return combine;
 }
@@ -618,7 +659,7 @@ float clawFootSDF(float3 p, float size) {
 
 
 float handSDF(float3 p, float size) {
-    //float size = u_Head[3] / 1.5;
+    //float size = headData[3] / 1.5;
     //size = 1.0;
     float base = udRoundBox(p, size * float3(.6, .6, .2), .08);
     float fingee1 = sdConeSection(rotateZ(p + size * float3(1.1, -0.7, 0.0), -30.0), size, size * .5, size * .2);
@@ -631,10 +672,6 @@ float handSDF(float3 p, float size) {
 }
 
 float appendagesSDF(float3 p) {
-	AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
-	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
-	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
-
 	float all = MAX_DIST;
 	float angle = 35.0;
 
@@ -643,30 +680,30 @@ float appendagesSDF(float3 p) {
 
 	int startPos = 0;
 	int startRot = 0;
-	for (int i = 0; i < appenAttr.numAppen; i++) {
-		int thisPos = startPos + (3 * ((limbAttr.limbLengths[i] - 1)));
-		float3 offset = float3(limbAttr.jointLocData[thisPos], limbAttr.jointLocData[thisPos + 1], limbAttr.jointLocData[thisPos + 2]);
+	for (int i = 0; i < numAppendages; i++) {
+		int thisPos = startPos + (3 * ((limbLengths[i] - 1)));
+		float3 offset = float3(jointLocData[thisPos], jointLocData[thisPos + 1], jointLocData[thisPos + 2]);
 
 		if ((i % 2) == 0) {
 			angle *= -1.0;
 		}
 		float foot;
 
-		if (appenAttr.appenBools[numAppen] == 1) {
+		if (appenBools[numAppen] == 1) {
 			armsNow = 1;
 		}
 
-		int thisRot = startRot + (4 * ((limbAttr.limbLengths[i] - 1)));
+		int thisRot = startRot + (4 * ((limbLengths[i] - 1)));
 		if (armsNow == 0) {
 			float3 rotP = rotateZ((p + offset), 90.0);
 			rotP = rotateY(rotP, 90.0);
 			rotP = rotateZ(rotP, angle);
-			foot = clawFootSDF(rotP, appenAttr.appenRads[numAppen]);
+			foot = clawFootSDF(rotP, appenRads[numAppen]);
 		}
 		else {
-			float3 q = rotateInverseAxisAngle(rotAttr.rotations[thisRot], rotAttr.rotations[thisRot + 1], rotAttr.rotations[thisRot + 2], rotAttr.rotations[thisRot + 3],
+			float3 q = rotateInverseAxisAngle(rotations[thisRot], rotations[thisRot + 1], rotations[thisRot + 2], rotations[thisRot + 3],
 				p + offset);
-			foot = handSDF(rotateZ(q, 180.0), appenAttr.appenRads[numAppen]);
+			foot = handSDF(rotateZ(q, 180.0), appenRads[numAppen]);
 		}
 
 		numAppen = numAppen + 1;
@@ -681,9 +718,6 @@ float appendagesSDF(float3 p) {
 
 float armSDF(float3 p) {
 
-	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
-	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
-
 	int countSegs = 0;
 
 	float allLimbs = MAX_DIST;
@@ -691,7 +725,7 @@ float armSDF(float3 p) {
 	int numLimbs = 0;
 	int jointNum = 0;
 	for (int i = 0; i < LIMBLEN_COUNT; i++) {
-		jointNum += limbAttr.limbLengths[i];
+		jointNum += limbLengths[i];
 	}
 
 	//this is for each limb
@@ -703,14 +737,14 @@ float armSDF(float3 p) {
 		// NEED joint number to do the below operations...
 
 		//count is number of joints in this limb
-		count = int(limbAttr.limbLengths[numLimbs - 1]);
+		count = int(limbLengths[numLimbs - 1]);
 
 		float arm = MAX_DIST;
 		// all joint positions for a LIM (jointNum * 3)
 		int endJoint = (j + (count * 3));
 		for (int i = j; i < endJoint; i = i + 3) {
-			float3 pTemp = p + float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
-			arm = min(arm, sphereSDF(pTemp, limbAttr.jointRadData[i / 3]));
+			float3 pTemp = p + float3(jointLocData[i], jointLocData[i + 1], jointLocData[i + 2]);
+			arm = min(arm, sphereSDF(pTemp, jointRadData[i / 3]));
 		}
 
 		// for 3 * (jointNum(per limb) - 1), each joint until last one
@@ -718,18 +752,18 @@ float armSDF(float3 p) {
 
 		endJoint = (j + ((count - 1) * 3));
 		for (i = j; i < endJoint; i = i + 3) {
-			float3 point0 = float3(limbAttr.jointLocData[i], limbAttr.jointLocData[i + 1], limbAttr.jointLocData[i + 2]);
-			float3 point1 = float3(limbAttr.jointLocData[i + 3], limbAttr.jointLocData[i + 4], limbAttr.jointLocData[i + 5]);
+			float3 point0 = float3(jointLocData[i], jointLocData[i + 1], jointLocData[i + 2]);
+			float3 point1 = float3(jointLocData[i + 3], jointLocData[i + 4], jointLocData[i + 5]);
 			float3 midpoint = float3((point0.x + point1.x) / 2.0, (point0.y + point1.y) / 2.0, (point0.z + point1.z) / 2.0);
 			float len = distance(point0, point1);
 
 			float3 dir = point1 - point0; //dir is correct
 
 			int r = (i / 3) * 4;
-			float3 q = rotateInverseAxisAngle(rotAttr.rotations[r], rotAttr.rotations[r + 1], rotAttr.rotations[r + 2], rotAttr.rotations[r + 3],
+			float3 q = rotateInverseAxisAngle(rotations[r], rotations[r + 1], rotations[r + 2], rotations[r + 3],
 				p + midpoint);
 
-			float part = sdConeSection(q, len / 2.0, limbAttr.jointRadData[(i + 3) / 3], limbAttr.jointRadData[i / 3]);
+			float part = sdConeSection(q, len / 2.0, jointRadData[(i + 3) / 3], jointRadData[i / 3]);
 			segments = min(segments, part);
 			countSegs++;
 		}
@@ -745,31 +779,28 @@ float armSDF(float3 p) {
 
 
 float spineSDF(float3 p) {
-	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
 
 	float spine = MAX_DIST;
 	for (int i = 0; i < SPINE_LOC_COUNT; i += 3) {
-		if (headSpineAttr.spineLocData[i] == 0. && headSpineAttr.spineLocData[i + 1] == 0. && headSpineAttr.spineLocData[i + 2] == 0.) continue;
-		float3 pTemp = p + float3(headSpineAttr.spineLocData[i], headSpineAttr.spineLocData[i + 1], headSpineAttr.spineLocData[i + 2]);
-		spine = smin(spine, sphereSDF(pTemp, headSpineAttr.spineRadData[i / 3]), 0.06);
+		if (spineLocData[i] == 0. && spineLocData[i + 1] == 0. && spineLocData[i + 2] == 0.) continue;
+		float3 pTemp = p + float3(spineLocData[i], spineLocData[i + 1], spineLocData[i + 2]);
+		spine = smin(spine, sphereSDF(pTemp, spineRadData[i / 3]), 0.06);
 	}
 	return spine;
 }
 
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
-	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
-
 	float headSDF = 0;
-	int headType = headSpineAttr.headData[4];
+	int headType = headData[4];
 	if (headType == 0) {
-		headSDF = bugHeadSDF(p, headSpineAttr.headData);
+		headSDF = bugHeadSDF(p);
 	}
 	else if (headType == 1) {
-		headSDF = dinoHeadSDF(p, headSpineAttr.headData);
+		headSDF = dinoHeadSDF(p);
 	}
 	else if (headType == 2) {
-		headSDF = trollHeadSDF(p, headSpineAttr.headData);
+		headSDF = trollHeadSDF(p);
 	}
 	float spine = spineSDF(p);
 	float headSpine = smin(spine, headSDF, .1);
@@ -838,6 +869,55 @@ void main() {
     out_Col = float4(color * lightIntensity, 1.0);
 }*/
 
+void fillGlobals()
+{
+	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
+	
+	for (int h = 0; h < HEAD_COUNT; h++)
+	{
+		headData[h] = headSpineAttr.headData[h];
+	}
+	for (int sl = 0; sl < SPINE_LOC_COUNT; sl++)
+	{
+		spineLocData[sl] = headSpineAttr.spineLocData[sl];
+	}
+	for (int sr = 0; sr < SPINE_RAD_COUNT; sr++)
+	{
+		spineRadData[sr] = headSpineAttr.spineRadData[sr];
+	}
+	
+	AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
+	
+	numAppendages = appenAttr.numAppen;
+	for (int a = 0; a < APPEN_COUNT; a++)
+	{
+		appenBools[a] = appenAttr.appenBools[a];
+		appenRads[a] = appenAttr.appenRads[a];
+	}
+	
+	LimbInfoBuffer limbAttr = g_limbBuffer[l_aabbCB.instanceIndex];
+	
+	for (int l = 0; l < LIMBLEN_COUNT; l++)
+	{
+		limbLengths[l] = limbAttr.limbLengths[l];
+	}
+	for (int jl = 0; jl < JOINT_LOC_COUNT; jl++)
+	{
+		jointLocData[jl] = limbAttr.jointLocData[jl];
+	}
+	for (int jr = 0; jr < JOINT_RAD_COUNT; jr++)
+	{
+		jointRadData[jr] = limbAttr.jointRadData[jr];
+	}
+	
+	RotationInfoBuffer rotAttr = g_rotBuffer[l_aabbCB.instanceIndex];
+
+	for (int r = 0; r < ROT_COUNT; r++)
+	{
+		rotations[r] = rotAttr.rotations[r];
+	}
+}
+
 // TODO-3.4.2: Volumetric primitive intersection shader. In our case, we only have Metaballs to take care of.
 // The overall structure of this function is parallel to MyIntersectionShader_AnalyticPrimitive() 
 // except you have to call the appropriate intersection test function (see RayVolumetricGeometryIntersectionTest())
@@ -847,6 +927,8 @@ void MyIntersectionShader_VolumetricPrimitive()
     Ray localRay = GetRayInAABBPrimitiveLocalSpace();
     VolumetricPrimitive::Enum primitiveType = (VolumetricPrimitive::Enum) l_aabbCB.primitiveType;
     PrimitiveInstancePerFrameBuffer aabbAttribute = g_AABBPrimitiveAttributes[l_aabbCB.instanceIndex];
+
+	fillGlobals();
 
     /*float3 positions[N_METABALLS];
     float radii[N_METABALLS];

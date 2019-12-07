@@ -81,6 +81,10 @@ private:
     StructuredBuffer<LimbInfoBuffer> m_limbBuffer;
     StructuredBuffer<RotationInfoBuffer> m_rotBuffer;
 
+	D3DBuffer m_textureBuffer;
+	ID3D12Resource* m_textureBufferUploadHeap;
+	D3D12_RESOURCE_DESC m_textureDesc;
+
     // Local root constant buffers
     PrimitiveConstantBuffer m_planeMaterialCB;
     PrimitiveConstantBuffer m_aabbMaterialCB[IntersectionShaderType::TotalPrimitiveCount];
@@ -137,6 +141,7 @@ private:
 	void CreateConstantBuffers();
 	void CreateAABBPrimitiveAttributesBuffers();
     void CreateCreatureBuffers();
+	void CreateTextureBuffers(std::string file);
 	void UpdateCameraMatrices();
 	void UpdateAABBPrimitiveAttributes(float animationTime);
     void UpdateCreatureAttributes();
@@ -153,6 +158,7 @@ private:
 
 	// DXR-Geometry.cpp
 	void BuildPlaneGeometry();
+	void BuildMeshGeometry(std::string basePath, std::string objectName);
 	void BuildProceduralGeometryAABBs();
 	void BuildGeometry();
 

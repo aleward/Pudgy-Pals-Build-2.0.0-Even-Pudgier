@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
-#include <iostream>
 
 // LOOKAT-1.8.3: This file contains pretty much everything else we decided was not too important. Feel free to explore what's going on here though.
 
@@ -84,13 +83,14 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     CreateCreatureBuffers();
 
+	//CreateTextureBuffers(std::string("../../resources/textures/red.jpg"));
+		//brown-fur-texture.jpg"));
+
     // Build shader tables, which define shaders and their local root arguments.
     BuildShaderTables();
 
     // Create an output 2D texture to store the raytracing result to.
     CreateRaytracingOutputResource();
-
-	InitImGUI();
 }
 
 // Selects the RTX API to use and tells the device to create a root signature given the descriptor.
@@ -238,7 +238,7 @@ void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
     commandList->ResourceBarrier(ARRAYSIZE(preCopyBarriers), preCopyBarriers);
 
     commandList->CopyResource(renderTarget, m_raytracingOutput.Get());
-	RenderImGUI();
+	//RenderImGUI();
 
     D3D12_RESOURCE_BARRIER postCopyBarriers[2];
     postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
@@ -312,8 +312,6 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_rayGenShaderTable.Reset();
     m_missShaderTable.Reset();
     m_hitGroupShaderTable.Reset();
-
-	ShutdownImGUI();
 }
 
 // Recreate the d3 device if it ever gets lost.

@@ -138,6 +138,8 @@ struct PrimitiveConstantBuffer
     float diffuseCoef;
     float specularCoef;
     float specularPower;
+	bool hasTexture;
+	float textureResolution;
 };
 
 // Attributes per primitive instance. An instance primitive actually exists in the scene and may be dynamic.
