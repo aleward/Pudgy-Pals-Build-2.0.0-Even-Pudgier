@@ -162,6 +162,7 @@ private:
 
 	// DXR-Geometry.cpp
 	void BuildPlaneGeometry();
+	void BuildMeshGeometry(std::string basePath, std::string objectName);
 	void BuildProceduralGeometryAABBs();
 	void BuildGeometry();
 
