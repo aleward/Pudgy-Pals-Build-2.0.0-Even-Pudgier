@@ -83,9 +83,6 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     CreateCreatureBuffers();
 
-	//CreateTextureBuffers(std::string("../../resources/textures/red.jpg"));
-		//brown-fur-texture.jpg"));
-
     // Build shader tables, which define shaders and their local root arguments.
     BuildShaderTables();
 
@@ -303,6 +300,9 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_indexBuffer.resource.Reset();
     m_vertexBuffer.resource.Reset();
     m_aabbBuffer.resource.Reset();
+
+	//m_textureBuffer.resource.Reset();
+	//m_textureBufferUploadHeap->Release();
 
     ResetComPtrArray(&m_bottomLevelAS);
     m_topLevelAS.Reset();

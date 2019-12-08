@@ -8,7 +8,7 @@ using namespace DX;
 
 // LOOKAT-1.8.0: Very first function called from Win32Application.cpp
 void DXProceduralProject::OnInit()
-{
+{	
 	m_deviceResources = std::make_unique<DeviceResources>(
 		DXGI_FORMAT_R8G8B8A8_UNORM,
 		DXGI_FORMAT_UNKNOWN,
@@ -143,20 +143,48 @@ void DXProceduralProject::OnKeyDown(UINT8 key)
 
 	switch (key)
 	{
+	// changing num of limb sets
 	case VK_NUMPAD1:
-	case '1': // Fallback Layer
-		m_forceComputeFallback = false;
-		SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+	case '1': 
+		m_numLimbs = 1;
+		UpdateCreatureAttributes();
 		break;
 	case VK_NUMPAD2:
-	case '2': // Fallback Layer + force compute path
-		m_forceComputeFallback = true;
-		SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+	case '2': 
+		m_numLimbs = 2;
+		UpdateCreatureAttributes();
 		break;
 	case VK_NUMPAD3:
-	case '3': // DirectX Raytracing
-		SelectRaytracingAPI(RaytracingAPI::DirectXRaytracing);
+	case '3': 
+		m_numLimbs = 3;
+		UpdateCreatureAttributes();
 		break;
+	// changing head type
+	case 'R':
+		m_headType = -1;
+		UpdateCreatureAttributes();
+		break;
+	case 'B':
+		m_headType = 0;
+		UpdateCreatureAttributes();
+		break;
+	case 'D':
+		m_headType = 1;
+		UpdateCreatureAttributes();
+		break;
+	case 'T':
+		m_headType = 2;
+		UpdateCreatureAttributes();
+		break;
+	// more controls
+	case 'M':
+		// insert load a mesh (for demo)
+		UpdateCreatureAttributes();
+		break;
+	case 'E':
+		// insert export to gltf func
+		break;
+	// animation controls
 	case 'C':
 		m_animateCamera = !m_animateCamera;
 		break;
@@ -165,6 +193,14 @@ void DXProceduralProject::OnKeyDown(UINT8 key)
 		break;
 	case 'L':
 		m_animateLight = !m_animateLight;
+		break;
+	// fallback vs dxr
+	case 'F': // Fallback Layer
+		m_forceComputeFallback = false;
+		SelectRaytracingAPI(RaytracingAPI::FallbackLayer);
+		break;
+	case 'X': // DirectX Raytracing
+		SelectRaytracingAPI(RaytracingAPI::DirectXRaytracing);
 		break;
 		break;
 	}
