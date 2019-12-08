@@ -38,9 +38,6 @@ void generate() {
 	// bigEmptyArray.fill(1);
 	// raymarchShader.setAppenBools(bigEmptyArray);*/
 
-	
-
-	Creature *creature = new Creature();
 	/*switch (controls.headType) {
 	case 'random': headType = -1;
 		break;

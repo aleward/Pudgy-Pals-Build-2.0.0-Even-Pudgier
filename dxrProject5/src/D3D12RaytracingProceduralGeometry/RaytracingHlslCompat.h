@@ -133,7 +133,12 @@ struct ProceduralPrimitiveAttributes
 // Constant buffer per primitive. A primitive is considered static.
 struct PrimitiveConstantBuffer
 {
-    XMFLOAT4 albedo;
+    XMFLOAT4 albedo0;
+	XMFLOAT4 albedo1;
+	XMFLOAT4 albedo2;
+	XMFLOAT4 albedo3;
+	int whichNoise0;
+	int whichNoise1;
     float reflectanceCoef;
     float diffuseCoef;
     float specularCoef;

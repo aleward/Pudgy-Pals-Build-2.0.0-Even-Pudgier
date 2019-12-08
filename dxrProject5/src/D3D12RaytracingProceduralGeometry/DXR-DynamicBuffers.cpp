@@ -2,6 +2,7 @@
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
 #include "Creature.h"
+#include <random>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_WINDOWS_UTF8
@@ -14,19 +15,33 @@ void DXProceduralProject::InitializeScene()
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
 
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> distrib(0, 1);
+
 	// Setup materials.
 	{
 		// Function pointer that sets up material properties for a procedural primitive
 		auto SetAttributes = [&](
 			UINT primitiveIndex,
-			const XMFLOAT4& albedo,
+			const XMFLOAT4 albedo0,
+			const XMFLOAT4 albedo1,
+			const XMFLOAT4 albedo2,
+			const XMFLOAT4 albedo3,
+			int whichNoise0,
+			int whichNoise1,
 			float reflectanceCoef = 0.0f,
 			float diffuseCoef = 0.9f,
 			float specularCoef = 0.7f,
 			float specularPower = 50.0f)
 		{
 			auto& attributes = m_aabbMaterialCB[primitiveIndex];
-			attributes.albedo = albedo;
+			attributes.albedo0 = albedo0;
+			attributes.albedo1 = albedo1;
+			attributes.albedo2 = albedo2;
+			attributes.albedo3 = albedo3;
+			attributes.whichNoise0 = whichNoise0;
+			attributes.whichNoise1 = whichNoise1;
 			attributes.reflectanceCoef = reflectanceCoef;
 			attributes.diffuseCoef = diffuseCoef;
 			attributes.specularCoef = specularCoef;
@@ -35,7 +50,7 @@ void DXProceduralProject::InitializeScene()
 		};
 
 		// Changes plane color
-		m_planeMaterialCB = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), 0.7f, 1, 0.4f, 50};
+		m_planeMaterialCB = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), 0, 0, 0.7f, 1, 0.4f, 50};
 
 		// Albedos
 		XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.5f, 1.0f);
@@ -56,8 +71,12 @@ void DXProceduralProject::InitializeScene()
 
 		// Volumetric primitives.
 		{
+			XMFLOAT4 c0 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+			XMFLOAT4 c1 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+			XMFLOAT4 c2 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+			XMFLOAT4 c3 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
 			using namespace VolumetricPrimitive;
-			SetAttributes(Metaballs, ChromiumReflectance, 1);
+			SetAttributes(Metaballs, c0, c1, c2, c3, std::floor(distrib(gen) * 4), std::floor(distrib(gen) * 4), 1);
 			//offset += VolumetricPrimitive::Count;
 		}
 	}
@@ -260,6 +279,7 @@ void DXProceduralProject::UpdateCreatureAttributes()
         {
             m_rotBuffer[primitiveIndex].rotations[r] = creature->jointRots[r];
         }
+		delete(creature);
     };
 
     /*UINT offset = 0;

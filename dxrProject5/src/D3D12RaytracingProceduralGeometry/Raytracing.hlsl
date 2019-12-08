@@ -64,6 +64,141 @@ float CalculateDiffuseCoefficient(in float3 incidentLightRay, in float3 normal)
 {
 	return abs(dot(normalize(incidentLightRay), normalize(normal)));
 }
+            
+const float3 a = float3(0.4, 0.5, 0.8);
+const float3 b = float3(0.2, 0.4, 0.2);
+const float3 c = float3(1.0, 1.0, 2.0);
+const float3 d = float3(0.25, 0.25, 0.0);
+
+const float3 e = float3(0.2, 0.5, 0.8);
+const float3 f = float3(0.2, 0.25, 0.5);
+const float3 g = float3(1.0, 1.0, 0.1);
+const float3 h = float3(0.0, 0.8, 0.2);
+            
+float fract(in float x)
+{
+    return x - floor(x);
+}
+            
+float2 fract(in float2 x)
+{
+    return x - floor(x);
+}
+
+// Return a random direction in a circle
+float2 random2(in float2 p)
+{
+    return normalize(2 * fract(sin(float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)))) * 43758.5453) - 1);
+}
+
+float3 Gradient(in float t)
+{
+    return a + b * cos(6.2831 * (c * t + d));
+}
+
+float3 Gradient2(in float t)
+{
+    return e + f * cos(6.2831 * (g * t + h));
+}
+
+float surflet(in float2 P, in float2 gridPoint)
+{
+// Compute falloff function by converting linear distance to a polynomial
+    float distX = abs(P.x - gridPoint.x);
+    float distY = abs(P.y - gridPoint.y);
+    float tX = 1 - 6 * pow(distX, 5.0) + 15 * pow(distX, 4.0) - 10 * pow(distX, 3.0);
+    float tY = 1 - 6 * pow(distY, 5.0) + 15 * pow(distY, 4.0) - 10 * pow(distY, 3.0);
+
+// Get the random vector for the grid point
+    float2 gradient = random2(gridPoint);
+// Get the vector from the grid point to P
+    float2 diff = P - gridPoint;
+// Get the value of our height field by dotting grid->P with our gradient
+    float height = dot(diff, gradient);
+// Scale our height field (i.e. reduce it) by our polynomial falloff function
+    return height * tX * tY;
+}
+
+float PerlinNoise(in float2 uv)
+{
+// Tile the space
+    float2 uvXLYL = floor(uv);
+    float2 uvXHYL = uvXLYL + float2(1, 0);
+    float2 uvXHYH = uvXLYL + float2(1, 1);
+    float2 uvXLYH = uvXLYL + float2(0, 1);
+
+    return surflet(uv, uvXLYL) + surflet(uv, uvXHYL) + surflet(uv, uvXHYH) + surflet(uv, uvXLYH);
+}
+
+float2 PixelToGrid(in float2 pixel, in float size)
+{
+    float2 uv = pixel.xy / 1.0f;
+// Account for aspect ratio
+    uv.x = uv.x * float(1.0f) / float(1.0f);
+// Determine number of cells (NxN)
+    uv *= size;
+
+    return uv;
+}
+            
+float3 NoiseGenBasic(in float2 loc)
+{
+	// Basic Perlin noise
+	float2 uv = PixelToGrid(loc, 4.0);
+	float perlin = PerlinNoise(uv);
+    float3 color = float3((perlin + 1) * 0.5, (perlin + 1) * 0.5, (perlin + 1) * 0.5);
+	color.r += step(0.98, fract(uv.x)) + step(0.98, fract(uv.y));
+    return color;
+}
+            
+float3 NoiseGenSummed(in float2 loc)
+{
+    float summedNoise = 0.0;
+    float amplitude = 0.5;
+    for (int i = 2; i <= 32; i *= 2)
+    {
+        float2 uv = PixelToGrid(loc, float(i));
+        uv = float2(cos(3.14159 / 3.0 * i) * uv.x - sin(3.14159 / 3.0 * i) * uv.y, sin(3.14159 / 3.0 * i) * uv.x + cos(3.14159 / 3.0 * i) * uv.y);
+        float perlin = abs(PerlinNoise(uv));
+        summedNoise += perlin * amplitude;
+        amplitude *= 0.5;
+    }
+    return float3(summedNoise, summedNoise, summedNoise);
+}
+
+float3 NoiseGenAbsolute(in float2 loc)
+{
+    float2 uv = PixelToGrid(loc, 10.0);
+    float perlin = PerlinNoise(uv);
+    return float3(1.0, 1.0, 1.0) - float3(abs(perlin), abs(perlin), abs(perlin));
+}
+           
+float3 NoiseGenRecursive1(in float2 loc)
+{
+    float2 planet = float2(cos(1.0f * 0.01 * 3.14159), sin(1.0f * 0.01 * 3.14159)) * 2 + float2(4.0, 4.0);
+    float2 uv = PixelToGrid(loc, 10.0);
+    float2 planetDiff = planet - uv;
+    float len = length(planetDiff);
+    float2 offset = float2(PerlinNoise(uv + 1.0f * 0.01), PerlinNoise(uv + float2(5.2, 1.3)));
+    if (len < 1.0)
+    {
+        offset += planetDiff * (1.0 - len);
+    }
+    float perlin = PerlinNoise(uv + offset);
+    return float3((perlin + 1) * 0.5, (perlin + 1) * 0.5, (perlin + 1) * 0.5);
+}
+            
+float3 NoiseGenRecursive2(in float2 loc)
+{
+    // Recursive Perlin noise (2 levels)
+    float2 uv = PixelToGrid(loc, 10.0);
+    float2 offset1 = float2(PerlinNoise(uv + cos(1.0f * 3.14159 * 0.01)), PerlinNoise(uv + float2(5.2, 1.3)));
+    float2 offset2 = float2(PerlinNoise(uv + offset1 + float2(1.7, 9.2)), PerlinNoise(uv + sin(1.0f * 3.14159 * 0.01) + offset1 + float2(8.3, 2.8)));
+    float perlin = PerlinNoise(uv + offset2);
+    float3 baseGradient = Gradient(perlin);
+    baseGradient = baseGradient * length(offset1) + float3(perlin, perlin, perlin) * (1.0f - length(offset1));
+    return baseGradient;
+}           
 
 // TODO-3.5: Phong lighting specular component.
 // The equation should be coefficient = (reflectedRay . reverseRayDirection) ^ (specularPower).
@@ -89,7 +224,7 @@ float4 CalculateSpecularCoefficient(in float3 incidentLightRay, in float3 normal
 // be completely black if the ray is a shadow ray.
 float4 CalculatePhongLighting(in float4 albedo, in float3 normal, in bool isInShadow,
 	in float diffuseCoef = 1.0, in float specularCoef = 1.0, in float specularPower = 50)
-{
+{                
 	// Ambient component
 	// Fake AO: Darken faces with normal facing downwards/away from the sky a little bit
 	float4 ambientColor = g_sceneCB.lightAmbientColor;
@@ -282,12 +417,12 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
         Ray reflectionRay = { hitPosition, reflect(WorldRayDirection(), triangleNormal) };
         float4 reflectionColor = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
 
-        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), triangleNormal, l_materialCB.albedo.xyz);
+        float3 fresnelR = FresnelReflectanceSchlick(WorldRayDirection(), triangleNormal, l_materialCB.albedo0.xyz);
         reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
     }
 
     // Calculate final color.
-    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo, triangleNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+    float4 phongColor = CalculatePhongLighting(l_materialCB.albedo0, triangleNormal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
     float4 color = (phongColor + reflectedColor);
 
 	// TODO: Apply a visibility falloff.
@@ -318,12 +453,28 @@ float3 squareToHemisphereUniform(in float inX, in float inY)
 	return float3(x, y, z);
 }
 
-float3 triplanar(float scale, float3 norm, float3 pos) {
-	float texRes = l_materialCB.textureResolution;
-	float3 xy = g_texture.Load(int3(floor(pos.xy * texRes), 0.0)).rgb;
-	float3 xz = g_texture.Load(int3(floor(pos.xz * texRes), 0.0)).rgb;
-	float3 yz = g_texture.Load(int3(floor(pos.yz * texRes), 0.0)).rgb;
-	return lerp(lerp(xz, yz, norm.x), xy, norm.z);
+float3 planar(in float2 loc, in float scale, in float3 pos, in int whichNoise) {
+    loc = loc / scale;
+    if (whichNoise == 0)
+    {
+        return NoiseGenBasic(loc);
+    }
+    else if (whichNoise == 1)
+    {
+        return NoiseGenAbsolute(loc);
+    }
+    else if (whichNoise == 2)
+    {
+        return NoiseGenSummed(loc);
+    }
+    else
+    {
+        return NoiseGenRecursive1(loc);
+    }
+}
+            
+float3 triplanar(in float3 top, in float3 front, in float3 side, in float3 normal) {
+    return float4(lerp(lerp(side, top, abs(normal.y)), front, abs(normal.x)), 1);
 }
 
 // TODO: Write the closest hit shader for a procedural geometry.
@@ -343,23 +494,16 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	
     // This is the intersection point on the triangle.
     float3 hitPosition = HitWorldPosition();
+    float3 normal = attr.normal;
     
     // Trace a shadow ray to determine if this ray is a shadow ray
     Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
     bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
 
-	float4 albedo = l_materialCB.albedo;
-	/*if (l_materialCB.hasTexture)
-	{
-		//albedo = float4(triplanar(1.0, attr.normal, hitPosition), 1.0);
-		float texRes = l_materialCB.textureResolution;
-		albedo = g_texture.Load(int3(10.0, 10.0, 10.0));
-	}
-	else
-	{
-		albedo = l_materialCB.albedo;
-	}*/
-	
+    float3 top = lerp(l_materialCB.albedo0.xyz, l_materialCB.albedo1.xyz, planar(hitPosition.xz, 1.0f, hitPosition, l_materialCB.whichNoise0));
+    float3 side = lerp(l_materialCB.albedo2.xyz, l_materialCB.albedo3.xyz, planar(hitPosition.xy, 1.0f, hitPosition, l_materialCB.whichNoise1));
+    float3 front = lerp(l_materialCB.albedo2.xyz, l_materialCB.albedo3.xyz, planar(hitPosition.yz, 1.0f, hitPosition, l_materialCB.whichNoise1));
+    float4 albedo = float4(triplanar(top, front, side, normal), 1);
 	
 	// Reflected component ray.
     float4 reflectedColor = float4(0, 0, 0, 0);
@@ -372,8 +516,11 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
         reflectedColor = l_materialCB.reflectanceCoef * float4(fresnelR, 1) * reflectionColor;
     }
 
+    float3 topRough = planar(hitPosition.xz, 1.0f, hitPosition, l_materialCB.whichNoise0);
+    float3 sideRough = planar(hitPosition.xy, 1.0f, hitPosition, l_materialCB.whichNoise0);
+    float3 frontRough = planar(hitPosition.yz, 1.0f, hitPosition, l_materialCB.whichNoise0);
     // Calculate final color with phong lighting
-    float4 phongColor = CalculatePhongLighting(albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, l_materialCB.specularPower);
+                float4 phongColor = CalculatePhongLighting(albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, lerp(l_materialCB.specularPower / 4.0f, l_materialCB.specularPower, triplanar(topRough, frontRough, sideRough, normal).r));
     float4 color = (phongColor + reflectedColor);
 
     float t = 1.0f - min(RayTCurrent() / 500.0f, 1.0f);
@@ -382,14 +529,13 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	rayPayload.color = falloffColor;
 	
 
-	/*float3 hitPosition = HitWorldPosition();
-	float4 aoColor = float4(1, 1, 1, 1);
+	/*float4 aoColor = float4(1, 1, 1, 1);
 	int aoSamples = 20;
 	int aoHits = 0;
 	float3 n = attr.normal;
-	float3 t = normalize(cross(n, n + float3(0, 0, 1)));
-	float3 b = normalize(cross(n, t));
-	float3x3 worldToTangent = float3x3(b, t, n);
+	float3 t2 = normalize(cross(n, n + float3(0, 0, 1)));
+	float3 b = normalize(cross(n, t2));
+	float3x3 worldToTangent = float3x3(b, t2, n);
 	for (int i = 0; i < aoSamples; i++) {
 		float2 s = rand_2_10(hitPosition.x + i, hitPosition.x + i + 10);
 		float3 hemPoint = squareToHemisphereUniform(s.x, s.y);
@@ -401,7 +547,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
 	}
 	aoColor *= 1.0f - (float(aoHits) / float(aoSamples));
 
-	rayPayload.color = aoColor;*/
+	rayPayload.color *= aoColor;*/
 }
 
 //***************************************************************************
@@ -806,7 +952,7 @@ float sceneSDF(float3 p) {
 	float headSpine = smin(spine, headSDF, .1);
 	float limbs = armSDF(p);
 	float appendages = appendagesSDF(p);
-	return headSpine; //smin(smin(limbs, appendages, .2), headSpine, .1);
+	return smin(smin(limbs, appendages, .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

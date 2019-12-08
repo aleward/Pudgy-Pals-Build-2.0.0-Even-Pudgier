@@ -165,5 +165,6 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 void DXProceduralProject::BuildGeometry()
 {
     BuildPlaneGeometry();
+	//BuildMeshGeometry("objects/", "suzanne.obj");
     BuildProceduralGeometryAABBs();
 }
