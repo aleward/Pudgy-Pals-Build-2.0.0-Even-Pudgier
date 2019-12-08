@@ -1,4 +1,4 @@
-# Pudgy Pals 2.0.0: Even Pudgier
+﻿# Pudgy Pals 2.0.0: Even Pudgier
 
 TODO: Insert screenshot of final product
 
@@ -43,7 +43,8 @@ The original Pudgy Pals project was completed in Typescript and WebGL. We though
 
 And even after all that work, when we ran the creature generator we were getting really low FPS (10-15), two or three times worse than the original application in WebGL.
 
-![](images/final.PNG)
+![](images/creature1.png)
+![](images/creature2.png)
 
 ## Optimizing SDFs
 
@@ -61,8 +62,8 @@ One of the more major features we took on in this project was rasterizing thhe S
 
 This algorithm was first developed and tested in a separate application using WebGL and typescript (see Cappy images below). Then it was migrated into our DirectX application.
 
-![](images/final.PNG)
-![](images/final.gif)
+![](images/marchingCubesGrid.png)
+![](images/cappyMesh.gif)
 
 # Optimizations
 TODO: Alexis
@@ -71,15 +72,15 @@ TODO: Alexis
 
 TODO: Josh
 
-![](images/final.PNG)
-![](images/final.PNG)
+![](images/uvUnwrapping.png)
+![](images/noUnwrapping.png)
 
 ## Ambient Occlusion
 
 TODO: Josh
 
-![](images/final.PNG)
-![](images/final.PNG)
+![](images/ambient1.png)
+![](images/ambient2.png)
 
 ## Curvature Shading
 
@@ -102,14 +103,20 @@ Meanwhile, we attempted to use other gui frameworks such as AntTweakBar, but fou
 The best we could do by the final project milestone was add key press events which change the creature parameters and regenerate the creature. Here is a list of them.
 
 1 - Generate creature with 1 set of limbs
+
 2 - Generate creature with 2 sets of limbs
+
 3 - Generate creature with 3 sets of limbs
+
 B - Generate creature with Bug head type
+
 D - Generate creature with Dino head type
+
 T - Generate creature with Troll head type
+
 R - Generate creature with Random head type
 
-![](images/final.PNG)
+![](images/guiOutline.png)
 
 ## GLTF Exporting
 
