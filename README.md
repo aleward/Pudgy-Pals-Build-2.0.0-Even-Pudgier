@@ -1,6 +1,6 @@
 ﻿# Pudgy Pals 2.0.0: Even Pudgier
 
-TODO: Insert screenshot of final product
+![](images/turntable.gif)
 
 ### Group Members: Alexis Ward, Joshua Nadel, Tabatha Hickman
 
@@ -27,7 +27,6 @@ This project will explore the possibilities of what DXR can do by experimenting 
 - [x] AO and curvature baker to drive texturing
 - [x] Imported meshes and textures
 - [x] User interface for character customization
-- [ ] GLTF exporter
 - [ ] Bonus feature: skeleton generation and export
 
 ## Milestones:
@@ -126,10 +125,6 @@ T - Generate creature with Troll head type
 R - Generate creature with Random head type
 
 ![](images/guiOutline.png)
-
-## GLTF Exporting
-
-TODO: Alexis
 
 # References:
 [Original Pudgy Pals repo](https://github.com/nmagarino/Pudgy-Pals-Procedural-Creature-Generator)

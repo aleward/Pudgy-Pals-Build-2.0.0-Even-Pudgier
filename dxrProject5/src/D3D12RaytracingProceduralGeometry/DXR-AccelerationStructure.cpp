@@ -172,7 +172,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 	// Bottom-level AS for the plane instance.
 	{
 		// Make the plane a little larger than the actual number of primitives in each dimension.
-		const XMUINT3 NUM_AABB = XMUINT3(1, 1, 1);
+		const XMUINT3 NUM_AABB = XMUINT3(700, 1, 700);
 		const XMFLOAT3 fWidth = XMFLOAT3(
 			NUM_AABB.x * c_aabbWidth + (NUM_AABB.x - 1) * c_aabbDistance,
 			NUM_AABB.y * c_aabbWidth + (NUM_AABB.y - 1) * c_aabbDistance,
@@ -188,7 +188,7 @@ void DXProceduralProject::BuildBottomLevelASInstanceDescs(BLASPtrType *bottomLev
 		// Calculate transformation matrix.
 		// We multiply the width by -0.5 in the x,z plane because we want the middle of the plane
 		// (which is currently expanded in the positive x,z plane) to be centered.
-		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 0.0f, -0.5f));
+		const XMVECTOR vBasePosition = vWidth * XMLoadFloat3(&XMFLOAT3(-0.5f, 1.1f, -0.5f));
 
 		// Scale in XZ dimensions.
 		XMMATRIX mScale = XMMatrixScaling(fWidth.x, fWidth.y, fWidth.z);
