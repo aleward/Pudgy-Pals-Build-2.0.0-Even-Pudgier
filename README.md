@@ -66,9 +66,11 @@ This algorithm was first developed and tested in a separate application using We
 ![](images/cappyMesh.gif)
 
 ## Optimizations
-TODO: Alexis
+
+In the earlier versions of this implementation, each triangle was processed individually, each with three vertices and three normals. This resulted in extraneous and duplicate data. To optimize this, we went through each of the edges of the grid and interpolated between the values from different triangles associated with it as well as combined information between multiple triangles. This resulted in a slower generation time of the mesh but increases the FPS manyfold.
 
 ## Automatic UV Unwrapping
+
 Because the original plan was to export textured creature meshes, we would need a system in place to UV unwrap arbitrary meshes. Research revealed different options for implementing this.
 
 ### Cubic Mapping
@@ -133,7 +135,6 @@ R - Generate creature with Random head type
 
 [Spore Creature Generation](http://chrishecker.com/My_liner_notes_for_spore#Creature_Skin_Mesh)
 
-TODO: Add links to marching cubes references
-[Marching Cubes](TODO)
+[Marching Cubes](https://www.researchgate.net/publication/228537283_Efficient_Implementation_of_Marching_Cubes'_Cases_with_Topological_Guarantees)
 
 [UV Unwrapping](https://stackoverflow.com/questions/18578943/automatically-generating-uv-coordinates-algorithms)
