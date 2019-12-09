@@ -123,7 +123,8 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 // TODO-2.5: Build geometry used in the project. As easy as calling both functions above :)
 void DXProceduralProject::BuildGeometry()
 {
-    BuildPlaneGeometry();
+	//BuildMeshFromMarch(march.triIndxVBO, march.triVerts, march.triNorms);
+    //BuildPlaneGeometry();
     BuildProceduralGeometryAABBs();
 }
 

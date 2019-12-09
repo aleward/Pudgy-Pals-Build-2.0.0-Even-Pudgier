@@ -46,6 +46,7 @@ public:
 private:
 	Cases cases;
 	SDF sdf;
+	//March march;
 
     static const UINT FrameCount = 3;
 

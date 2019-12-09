@@ -31,7 +31,7 @@ void DXProceduralProject::OnInit()
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
 
-    UpdateCreatureAttributes();
+    //UpdateCreatureAttributes();
 }
 
 // LOOKAT-1.8.0: Update frame-based values (e.g. camera effects, light, animation time)

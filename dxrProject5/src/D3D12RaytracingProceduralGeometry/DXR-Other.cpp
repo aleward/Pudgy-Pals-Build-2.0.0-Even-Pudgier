@@ -70,8 +70,20 @@ void DXProceduralProject::CreateDeviceDependentResources()
     // Create a heap for descriptors.
     CreateDescriptorHeap();
 
+	CreateCreatureBuffers();
+	UpdateCreatureAttributes();
+
+	sdf = SDF(m_headSpineBuffer, m_appenBuffer, m_limbBuffer, m_rotBuffer);
+	March march = March(vec3(2.0, 2.0, 2.0), vec3(0.0, 0.0, 0.0), 10.0, &cases, &sdf);
+	march.testVertexSDFs();
+	march.testBoxValues();
+	march.setTriangles();
+	march.callMeshClass();
+	BuildMeshFromMarch(march.triIndxVBO, march.triVerts, march.triNorms);
+
     // Build geometry to be used in the project.
     BuildGeometry();
+	ResetCreatureAttributes();
 
     // Build raytracing acceleration structures from the generated geometry.
     BuildAccelerationStructures();
@@ -81,8 +93,6 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     // Create AABB primitive attribute buffers.
     CreateAABBPrimitiveAttributesBuffers();
-
-    CreateCreatureBuffers();
 
     // Build shader tables, which define shaders and their local root arguments.
     BuildShaderTables();
