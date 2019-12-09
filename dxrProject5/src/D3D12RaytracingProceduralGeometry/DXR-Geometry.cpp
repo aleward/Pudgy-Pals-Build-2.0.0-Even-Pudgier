@@ -188,9 +188,56 @@ void DXProceduralProject::BuildMeshFromMarch(std::vector<int> indx, std::vector<
 
 	Index *indices = new Index[indx.size()];
 	Vertex *vertices = new Vertex[pos.size()];
+
+	std::vector<Index> indices2 = std::vector<Index>();
+	indices2.resize(0);
+	std::vector<Vertex> vertices2 = std::vector<Vertex>();
+	vertices2.resize(0);
+
+	/*for (int i = 0; i < pos.size(); i++) {
+		vec3 currPos = pos[i];
+		Vertex newV = { XMFLOAT3(10.0 * currPos[0], 10.0 * currPos[1], 10.0 * currPos[2]),
+						XMFLOAT3(norms[i][0], norms[i][1], norms[i][2]) };
+		vertices2.push_back(newV);
+	}
+	for (int j = 0; j < indx.size(); j++) {
+		indices2.push_back(indx[j]);
+	}*/
+
+	/*std::vector<XMFLOAT3> vertexVector = std::vector<XMFLOAT3>();
+	for (int i = 0; i < pos.size(); i++) {
+		vec3 currPos = pos[i];
+		vertexVector.push_back(XMFLOAT3(10.0 * currPos[0], 10.0 * currPos[1], 10.0 * currPos[2]));
+	}*/
+
+	int tempCount = 0;
+
+	OutputDebugStringA("# List of geometric vertices, with(x, y, z) coordinates\n");
+	for (int i = 0; i < pos.size(); i++) {
+		vec3 currPos = pos[i];
+		OutputDebugStringA(LPCSTR(("v " + to_string(currPos[0]) + " " + to_string(currPos[1]) + " " + to_string(currPos[2]) + "\n").c_str()));
+	}
+	for (int i = 0; i < pos.size(); i++) {
+		OutputDebugStringA(LPCSTR(("vt " + to_string(0.0) + " " + to_string(0.0) + "\n").c_str()));
+	}
+	//("# List of vertex normals in (x,y,z) form\n");
+	for (int i = 0; i < pos.size(); i++) {
+		vec3 norm = norms[i];
+		OutputDebugStringA(LPCSTR(("vn " + to_string(norm[0]) + " " + to_string(norm[1]) + " " + to_string(norm[2]) + "\n").c_str()));
+	}
+	//OutputDebugStringA("# Polygonal face element\n");
+	for (int j = 0; j < indx.size() / 3; j++) {
+		OutputDebugStringA(LPCSTR(("f " + to_string(indx[j * 3] + 1) + " " + to_string(indx[j * 3 + 1] + 1) + " " + to_string(indx[j * 3 + 2] + 1) + "\n").c_str()));
+	}
+	
+
 	for (int i = 0; i < pos.size(); i++) {
 		Vertex newV;
-		newV.position = XMFLOAT3(pos[i][0], pos[i][1], pos[i][2]);
+		vec3 currPos = pos[i];
+		newV.position = XMFLOAT3(2.5 * currPos[0] + 6.0, 2.5 * currPos[1] + 6.0, 2.5 * currPos[2] + 5.7);
+		/*newV.position.x = pos[i][0];// , pos[i][1], pos[i][2]
+		newV.position.y = pos[i][1];
+		newV.position.z = pos[i][2];*/
 		newV.normal = XMFLOAT3(norms[i][0], norms[i][1], norms[i][2]);
 		vertices[i] = newV;
 	}

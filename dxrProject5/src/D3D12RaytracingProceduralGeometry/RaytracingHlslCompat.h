@@ -178,6 +178,7 @@ struct RotationInfoBuffer
 
 struct HeadSpineInfoBuffer
 {
+	bool notVis;
     float headData[HEAD_COUNT];
     float spineLocData[SPINE_LOC_COUNT];
     float spineRadData[SPINE_RAD_COUNT];

@@ -539,7 +539,9 @@ public:
 		RotationInfoBuffer rotAttr = g_rotBuffer[0];
 	
 		float all = MAX_DIST;
-		float angle = 35.0;
+		float angle;
+		float angle1 = -35.0;
+		float angle2 = 35.0;
 	
 		int armsNow = 0;
 		int numAppen = 0;
@@ -551,7 +553,11 @@ public:
 			vec3 offset = vec3(limbAttr.jointLocData[thisPos], limbAttr.jointLocData[thisPos + 1], limbAttr.jointLocData[thisPos + 2]);
 	
 			if ((i % 2) == 0) {
-				angle *= -1.0;
+				angle = angle1;
+			}
+			else
+			{
+				angle = angle2;
 			}
 			float foot;
 	
@@ -678,6 +684,6 @@ public:
 		float headSpine = smin(spine, headSDF, .1);
 		float limbs = armSDF(p);
 		float appendages = appendagesSDF(p);
-		return headSpine;//smin(smin(limbs, appendages, .2), headSpine, .1);
+		return smin(smin(limbs, appendages, .2), headSpine, .1);
 	}
 };

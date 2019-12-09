@@ -15,6 +15,8 @@
 //*****------ Shader resources bound via root signatures -------*************
 //***************************************************************************
 
+static bool notVis;
+
 // Scene wide resources.
 //  g_* - bound via a global root signature.
 //  l_* - bound via a local root signature.
@@ -235,7 +237,7 @@ void MyRaygenShader()
 [shader("closesthit")]
 void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangleIntersectionAttributes attr)
 {
-    // Get the base index of the triangle's first 16 bit index.
+	// Get the base index of the triangle's first 16 bit index.
     uint indexSizeInBytes = 2;
     uint indicesPerTriangle = 3;
     uint triangleIndexStride = indicesPerTriangle * indexSizeInBytes;
@@ -247,14 +249,52 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
     const uint3 indices = Load3x16BitIndices(baseIndex, g_indices);
 
     // Retrieve corresponding vertex normals for the triangle vertices.
-    float3 triangleNormal = g_vertices[indices[0]].normal;
+   // float3 triangleNormal = g_vertices[indices[1]].normal;
+
 
 	// This is the intersection point on the triangle.
 	float3 hitPosition = HitWorldPosition();
 
+	float3 p1 = g_vertices[indices.x].position;
+	float3 p2 = g_vertices[indices.y].position;
+	float3 p3 = g_vertices[indices.z].position;
+
+	/*float S  = 0.5 * length(cross(p2 - p1, p3 - p1));
+	float S1 = 0.5 * length(cross(p2 - hitPosition, p3 - hitPosition));
+	float S2 = 0.5 * length(cross(p3 - hitPosition, p1 - hitPosition));
+	float S3 = 0.5 * length(cross(p1 - hitPosition, p2 - hitPosition));*/
+
+	float3 n1 = g_vertices[indices.x].normal;
+	float3 n2 = g_vertices[indices.y].normal;
+	float3 n3 = g_vertices[indices.z].normal;/**/
+
+	//float3 triangleNormal = (n1 * (S1 / S) + n2 * (S2 / S) + n3 * (S3 / S));
+
+	/*float3 triangleNormal = cross(p2 - p1, p3 - p1);//(n1 + n2 + n3) / 3.0;
+	if (length(triangleNormal) < 0.99999) {//dot(triangleNormal, WorldRayDirection()) >= 0) {
+		triangleNormal = float3(1.0, 0.0, 0.0);//-1.0 * triangleNormal;
+	}*/
+	//float3 triangleNormal = normalize(float3(n1.x, 0.0, n1.z) + float3(n2.x, 0.0, n2.z) + float3(n3.x, 0.0, n3.z));
+	//float3 triangleNormal = normalize(float3(0.0, n1.y, 0.0));//n1 * n2 * n3);
+	float3 triangleNormal = normalize(n1 + n2 + n3);
+
+	/*if (dot(triangleNormal, normalize(float3(1.0, 1.0, 0.0))) < 0.2) {
+		triangleNormal = float3(0.0, -1.0, 0.0);
+	}
+	else {*/
+		triangleNormal = normalize(float3(1.0, 1.0, 0.0));
+	//}
+
     // Trace a ray from the hit position towards the single light source we have. If on our way to the light we hit something, then we have a shadow!
     Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
-    bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+    //bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+	bool shadowRayHit;
+	if (false) {
+		shadowRayHit = false;
+	}
+	else {
+		shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
+	}
 
     // Reflected component ray.
     float4 reflectedColor = float4(0, 0, 0, 0);
@@ -282,7 +322,16 @@ void MyClosestHitShader_Triangle(inout RayPayload rayPayload, in BuiltInTriangle
     float t = 1.0f - min(RayTCurrent()/500.0f, 1.0f);
     float4 falloffColor = lerp(BackgroundColor, color, t);
 
-	rayPayload.color = falloffColor;
+	if (false) {//!g_headSpineBuffer[l_aabbCB.instanceIndex].notVis) {
+		//falloffColor.a = 0;
+		Ray reflectionRay = { hitPosition, WorldRayDirection() };
+		float4 endCol = TraceRadianceRay(reflectionRay, rayPayload.recursionDepth);
+		rayPayload.color = endCol;
+	}
+	else {
+
+		rayPayload.color = falloffColor;
+	}
 }
 
 // From https://gamedev.stackexchange.com/questions/32681/random-number-hlsl
@@ -765,7 +814,9 @@ float spineSDF(float3 p, float u_SpineLoc[SPINE_LOC_COUNT], float u_SpineRad[SPI
 
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
-    HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
+	return MAX_DIST;
+	HeadSpineInfoBuffer headSpineAttr = g_headSpineBuffer[l_aabbCB.instanceIndex];
+	//notVis = headSpineAttr.notVis;
 
     float u_Head[HEAD_COUNT] = headSpineAttr.headData;
 
@@ -782,8 +833,7 @@ float sceneSDF(float3 p) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
     float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-	return headSpine;/*smin(smin(armSDF(p),
-        appendagesSDF(p), .2), headSpine, .1);*/
+	return smin(smin(armSDF(p), appendagesSDF(p), .2), headSpine, .1);
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//

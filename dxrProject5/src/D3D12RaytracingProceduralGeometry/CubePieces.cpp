@@ -12,7 +12,7 @@ Triangle::~Triangle()
 {}
 
 Triangle2::Triangle2(std::array<int, 3> inds) :
-	indices(indices)
+	indices(inds)
 {}
 
 Triangle2::~Triangle2()

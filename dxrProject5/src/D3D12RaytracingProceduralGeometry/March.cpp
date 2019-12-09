@@ -30,6 +30,10 @@ March::March(vec3 scale, vec3 trans, float divs, Cases* cases, SDF* sdfS) :
 	weights.resize(numVerts);
 	blocks.resize(numBlocks);
 
+	triVerts.resize(0);
+	triNorms.resize(0);
+	triIndxVBO.resize(0);;
+
 	float delta = 2.0 / divisions;
 
 	// Vertex loop
@@ -231,22 +235,26 @@ void March::testBoxValues()
 	}
 }
 
+bool within(float val, float equals) {
+	return (val <= equals + 0.0000005) && (val >= equals - 0.0000005);
+}
+
 std::pair<int, int> March::edgeCheck(vec3 point)
 {
-	if (point[1] == -0.5 && point[2] == -0.5) { return std::make_pair<int, int>(0, 3); }
-    if (point[1] == -0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(1, 2); }
-    if (point[1] ==  0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(5, 6); }
-    if (point[1] ==  0.5 && point[2] == -0.5) { return std::make_pair<int, int>(4, 7); }
+	if (within(point[1], -0.5) && within(point[2], -0.5)) { return std::make_pair<int, int>(0, 3); }	//if (point[1] == -0.5 && point[2] == -0.5) { return std::make_pair<int, int>(0, 3); }
+    if (within(point[1], -0.5) && within(point[2],  0.5)) { return std::make_pair<int, int>(1, 2); }	//if (point[1] == -0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(1, 2); }
+    if (within(point[1],  0.5) && within(point[2],  0.5)) { return std::make_pair<int, int>(5, 6); }	//if (point[1] ==  0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(5, 6); }
+    if (within(point[1],  0.5) && within(point[2], -0.5)) { return std::make_pair<int, int>(4, 7); }	//if (point[1] ==  0.5 && point[2] == -0.5) { return std::make_pair<int, int>(4, 7); }
 
-    if (point[0] == -0.5 && point[2] == -0.5) { return std::make_pair<int, int>(0, 4); }
-    if (point[0] == -0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(1, 5); }
-    if (point[0] ==  0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(2, 6); }
-    if (point[0] ==  0.5 && point[2] == -0.5) { return std::make_pair<int, int>(3, 7); }
+	if (within(point[0], -0.5) && within(point[2], -0.5)) { return std::make_pair<int, int>(0, 4); }	//if (point[0] == -0.5 && point[2] == -0.5) { return std::make_pair<int, int>(0, 4); }
+    if (within(point[0], -0.5) && within(point[2],  0.5)) { return std::make_pair<int, int>(1, 5); }	//if (point[0] == -0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(1, 5); }
+    if (within(point[0],  0.5) && within(point[2],  0.5)) { return std::make_pair<int, int>(2, 6); }	//if (point[0] ==  0.5 && point[2] ==  0.5) { return std::make_pair<int, int>(2, 6); }
+    if (within(point[0],  0.5) && within(point[2], -0.5)) { return std::make_pair<int, int>(3, 7); }	//if (point[0] ==  0.5 && point[2] == -0.5) { return std::make_pair<int, int>(3, 7); }
 
-    if (point[0] == -0.5 && point[1] == -0.5) { return std::make_pair<int, int>(0, 1); }
-    if (point[0] == -0.5 && point[1] ==  0.5) { return std::make_pair<int, int>(4, 5); }
-    if (point[0] ==  0.5 && point[1] ==  0.5) { return std::make_pair<int, int>(7, 6); }
-    if (point[0] ==  0.5 && point[1] == -0.5) { return std::make_pair<int, int>(3, 2); }
+	if (within(point[0], -0.5) && within(point[1], -0.5)) { return std::make_pair<int, int>(0, 1); }	//if (point[0] == -0.5 && point[1] == -0.5) { return std::make_pair<int, int>(0, 1); }
+    if (within(point[0], -0.5) && within(point[1],  0.5)) { return std::make_pair<int, int>(4, 5); }	//if (point[0] == -0.5 && point[1] ==  0.5) { return std::make_pair<int, int>(4, 5); }
+    if (within(point[0],  0.5) && within(point[1],  0.5)) { return std::make_pair<int, int>(7, 6); }	//if (point[0] ==  0.5 && point[1] ==  0.5) { return std::make_pair<int, int>(7, 6); }
+    if (within(point[0],  0.5) && within(point[1], -0.5)) { return std::make_pair<int, int>(3, 2); }	//if (point[0] ==  0.5 && point[1] == -0.5) { return std::make_pair<int, int>(3, 2); }
 
 	return std::make_pair<int, int>(0, 0);
 }
@@ -281,14 +289,18 @@ void March::setTriangles()
 					vert = mat3::rotateX(sdf->radians(blocks[i]->rotation[0])) * vert;///vec3.rotateX(vert, vert, center, this.blocks[i].rotation[0] * rad);
                     // - Check and record which edge it is on
 					std::pair<int, int> e = edgeCheck(vert);
+					if (e == std::make_pair(0, 0)) {
+						e = std::make_pair(0, 1);
+					}
                     int e0 = blocks[i]->vertIdxs[std::get<0>(e)];
                     int e1 = blocks[i]->vertIdxs[std::get<1>(e)];
                     std::string eL = edgeLabel(e0, e1);
 
                     if (edges.count(eL) > 0) {
-                        Edge& currEdge = *edges.at(eL);
+                        //Edge& currEdge = *edges.at(eL);
                         // If the edge has no existing vertex, create a new one
-                        if (currEdge.vertexIndex == -1) {
+						Edge& yeaboi = *edges.at(eL);
+                        if (yeaboi.vertexIndex == -1) {//edges.at(eL)->vertexIndex == -1) {
                             // Interpolate between the existing vertices
                             vec3 pos1 = positions[e0];
                             vec3 pos2 = positions[e1];
@@ -302,10 +314,10 @@ void March::setTriangles()
                                         pos1[2] + lerp * (pos2[2] - pos1[2]));
 
                             currTriangle[v] = triVerts.size();
-                            currWeights[v] = currEdge.numVerts;
+							currWeights[v] = yeaboi.numVerts;//edges.at(eL)->numVerts;
 
-                            currEdge.numVerts = 1;
-                            currEdge.vertexIndex = triVerts.size();
+                            yeaboi.numVerts = 1;
+                            yeaboi.vertexIndex = triVerts.size();
 
                             triVerts.push_back(vert);
                             // Fill with an empty normal, to be handled later
@@ -314,9 +326,9 @@ void March::setTriangles()
                         // If the edge already has a vertex, blend normal values
                         else {
                             // Update triangle and edge
-                            currTriangle[v] = currEdge.vertexIndex;
-                            currWeights[v]  = currEdge.numVerts;
-                            currEdge.numVerts++;
+                            currTriangle[v] = edges.at(eL)->vertexIndex;
+                            currWeights[v]  = edges.at(eL)->numVerts;
+							edges.at(eL)->numVerts++;
                         }
                     } 
                 }

@@ -74,15 +74,16 @@ void DXProceduralProject::CreateDeviceDependentResources()
 	UpdateCreatureAttributes();
 
 	sdf = SDF(m_headSpineBuffer, m_appenBuffer, m_limbBuffer, m_rotBuffer);
-	March march = March(vec3(2.0, 2.0, 2.0), vec3(0.0, 0.0, 0.0), 10.0, &cases, &sdf);
+	March march = March(vec3(2.5, 2.5, 2.5), vec3(0.5, 0.0, 0.0), 100.0, &cases, &sdf);
 	march.testVertexSDFs();
 	march.testBoxValues();
 	march.setTriangles();
 	march.callMeshClass();
+	
+	// Build geometry to be used in the project.
+    BuildGeometry();
 	BuildMeshFromMarch(march.triIndxVBO, march.triVerts, march.triNorms);
 
-    // Build geometry to be used in the project.
-    BuildGeometry();
 	ResetCreatureAttributes();
 
     // Build raytracing acceleration structures from the generated geometry.
