@@ -42,6 +42,8 @@ Texture2D g_texture: register(t0, space1);
 static float headData[HEAD_COUNT];
 static float spineLocData[SPINE_LOC_COUNT];
 static float spineRadData[SPINE_RAD_COUNT];
+static float4 colorData[4];
+static float2 noiseData;
 
 static float numAppendages;
 static float appenBools[APPEN_COUNT];
@@ -500,9 +502,9 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     Ray shadowRay = { hitPosition, normalize(g_sceneCB.lightPosition.xyz - hitPosition) };
     bool shadowRayHit = TraceShadowRayAndReportIfHit(shadowRay, rayPayload.recursionDepth);
 
-    float3 top = lerp(l_materialCB.albedo0.xyz, l_materialCB.albedo1.xyz, planar(hitPosition.xz, 1.0f, hitPosition, l_materialCB.whichNoise0));
-    float3 side = lerp(l_materialCB.albedo2.xyz, l_materialCB.albedo3.xyz, planar(hitPosition.xy, 1.0f, hitPosition, l_materialCB.whichNoise1));
-    float3 front = lerp(l_materialCB.albedo2.xyz, l_materialCB.albedo3.xyz, planar(hitPosition.yz, 1.0f, hitPosition, l_materialCB.whichNoise1));
+    float3 top = lerp(colorData[0].xyz, colorData[1].xyz, planar(hitPosition.xz, 1.0f, hitPosition, noiseData.x));
+    float3 side = lerp(colorData[2].xyz, colorData[3].xyz, planar(hitPosition.xy, 1.0f, hitPosition, noiseData.y));
+    float3 front = lerp(colorData[2].xyz, colorData[3].xyz, planar(hitPosition.yz, 1.0f, hitPosition, noiseData.y));
     float4 albedo = float4(triplanar(top, front, side, normal), 1);
 	
 	// Reflected component ray.
@@ -520,7 +522,7 @@ void MyClosestHitShader_AABB(inout RayPayload rayPayload, in ProceduralPrimitive
     float3 sideRough = planar(hitPosition.xy, 1.0f, hitPosition, l_materialCB.whichNoise0);
     float3 frontRough = planar(hitPosition.yz, 1.0f, hitPosition, l_materialCB.whichNoise0);
     // Calculate final color with phong lighting
-                float4 phongColor = CalculatePhongLighting(albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, lerp(l_materialCB.specularPower / 4.0f, l_materialCB.specularPower, triplanar(topRough, frontRough, sideRough, normal).r));
+                float4 phongColor = CalculatePhongLighting(albedo, attr.normal, shadowRayHit, l_materialCB.diffuseCoef, l_materialCB.specularCoef, lerp(l_materialCB.specularPower / 2.0f, l_materialCB.specularPower * 2.0f, triplanar(topRough, frontRough, sideRough, normal).r));
     float4 color = (phongColor + reflectedColor);
 
     float t = 1.0f - min(RayTCurrent() / 500.0f, 1.0f);
@@ -819,7 +821,9 @@ float handSDF(float3 p, float size) {
 
 float appendagesSDF(float3 p) {
 	float all = MAX_DIST;
-	float angle = 35.0;
+	float angle;
+    float angle1 = -35.0;
+    float angle2 = 35.0;
 
 	int armsNow = 0;
 	int numAppen = 0;
@@ -831,8 +835,12 @@ float appendagesSDF(float3 p) {
 		float3 offset = float3(jointLocData[thisPos], jointLocData[thisPos + 1], jointLocData[thisPos + 2]);
 
 		if ((i % 2) == 0) {
-			angle *= -1.0;
+			angle = angle1;
 		}
+        else
+        {
+            angle = angle2;
+        }
 		float foot;
 
 		if (appenBools[numAppen] == 1) {
@@ -937,7 +945,8 @@ float spineSDF(float3 p) {
 
 // OVERALL SCENE SDF -- rotates about z-axis (turn-table style)
 float sceneSDF(float3 p) {
-	float headSDF = 0;
+    p.x += 0.3;
+    float headSDF = 0;
 	int headType = headData[4];
 	if (headType == 0) {
 		headSDF = bugHeadSDF(p);
@@ -1031,6 +1040,12 @@ void fillGlobals()
 	{
 		spineRadData[sr] = headSpineAttr.spineRadData[sr];
 	}
+                
+    for (int c = 0; c < 4; c++)
+    {
+        colorData[c] = float4(headSpineAttr.colorData[c * 4], headSpineAttr.colorData[c * 4 + 1], headSpineAttr.colorData[c * 4 + 2], headSpineAttr.colorData[c * 4 + 3]);
+    }
+    noiseData = float2(headSpineAttr.colorData[16], headSpineAttr.colorData[17]);
 	
 	AppendageInfoBuffer appenAttr = g_appenBuffer[l_aabbCB.instanceIndex];
 	

@@ -188,6 +188,7 @@ struct HeadSpineInfoBuffer
     float headData[HEAD_COUNT];
     float spineLocData[SPINE_LOC_COUNT];
     float spineRadData[SPINE_RAD_COUNT];
+	float colorData[18];
 };
 
 struct ModelInfo

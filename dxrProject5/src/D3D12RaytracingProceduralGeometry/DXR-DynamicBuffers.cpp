@@ -15,71 +15,8 @@ void DXProceduralProject::InitializeScene()
 {
 	auto frameIndex = m_deviceResources->GetCurrentFrameIndex();
 
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> distrib(0, 1);
-
 	// Setup materials.
-	{
-		// Function pointer that sets up material properties for a procedural primitive
-		auto SetAttributes = [&](
-			UINT primitiveIndex,
-			const XMFLOAT4 albedo0,
-			const XMFLOAT4 albedo1,
-			const XMFLOAT4 albedo2,
-			const XMFLOAT4 albedo3,
-			int whichNoise0,
-			int whichNoise1,
-			float reflectanceCoef = 0.0f,
-			float diffuseCoef = 0.9f,
-			float specularCoef = 0.7f,
-			float specularPower = 50.0f)
-		{
-			auto& attributes = m_aabbMaterialCB[primitiveIndex];
-			attributes.albedo0 = albedo0;
-			attributes.albedo1 = albedo1;
-			attributes.albedo2 = albedo2;
-			attributes.albedo3 = albedo3;
-			attributes.whichNoise0 = whichNoise0;
-			attributes.whichNoise1 = whichNoise1;
-			attributes.reflectanceCoef = reflectanceCoef;
-			attributes.diffuseCoef = diffuseCoef;
-			attributes.specularCoef = specularCoef;
-			attributes.specularPower = specularPower;
-			attributes.hasTexture = false;
-		};
-
-		// Changes plane color
-		m_planeMaterialCB = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), 0, 0, 0.7f, 1, 0.4f, 50};
-
-		// Albedos
-		XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.5f, 1.0f);
-		XMFLOAT4 purple = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
-		XMFLOAT4 chromium_purple = XMFLOAT4(purple.x * ChromiumReflectance.x, 
-											purple.y * ChromiumReflectance.y,
-											purple.z * ChromiumReflectance.z,
-											1.0f);
-
-		/*UINT offset = 0;
-		// Analytic primitives.
-		{
-			using namespace AnalyticPrimitive;
-			SetAttributes(offset + AABB, yellow, 0.3f);
-			SetAttributes(offset + Spheres, chromium_purple, 0.8f);
-			offset += AnalyticPrimitive::Count;
-		}*/
-
-		// Volumetric primitives.
-		{
-			XMFLOAT4 c0 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
-			XMFLOAT4 c1 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
-			XMFLOAT4 c2 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
-			XMFLOAT4 c3 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
-			using namespace VolumetricPrimitive;
-			SetAttributes(Metaballs, c0, c1, c2, c3, std::floor(distrib(gen) * 4), std::floor(distrib(gen) * 4), 1);
-			//offset += VolumetricPrimitive::Count;
-		}
-	}
+	UpdateMaterialAttributes();
 
 	// Setup camera.
 	{
@@ -116,6 +53,9 @@ void DXProceduralProject::InitializeScene()
 		lightDiffuseColor = XMFLOAT4(d, d, d, 1.0f);
 		m_sceneCB->lightDiffuseColor = XMLoadFloat4(&lightDiffuseColor);
 	}
+
+	m_numLimbs = 1;
+	m_headType = -1;
 }
 
 // LOOKAT-2.1: Creates the scene constant buffer.
@@ -223,6 +163,71 @@ void DXProceduralProject::UpdateAABBPrimitiveAttributes(float animationTime)
 	}
 }
 
+void DXProceduralProject::UpdateMaterialAttributes() {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> distrib(0, 1);
+
+	// Function pointer that sets up material properties for a procedural primitive
+	auto SetAttributes = [&](
+		UINT primitiveIndex,
+		const XMFLOAT4 albedo0,
+		const XMFLOAT4 albedo1,
+		const XMFLOAT4 albedo2,
+		const XMFLOAT4 albedo3,
+		int whichNoise0,
+		int whichNoise1,
+		float reflectanceCoef = 0.0f,
+		float diffuseCoef = 0.9f,
+		float specularCoef = 0.7f,
+		float specularPower = 50.0f)
+	{
+		auto& attributes = m_aabbMaterialCB[primitiveIndex];
+		attributes.albedo0 = albedo0;
+		attributes.albedo1 = albedo1;
+		attributes.albedo2 = albedo2;
+		attributes.albedo3 = albedo3;
+		attributes.whichNoise0 = whichNoise0;
+		attributes.whichNoise1 = whichNoise1;
+		attributes.reflectanceCoef = reflectanceCoef;
+		attributes.diffuseCoef = diffuseCoef;
+		attributes.specularCoef = specularCoef;
+		attributes.specularPower = specularPower;
+		attributes.hasTexture = false;
+	};
+
+	// Changes plane color
+	m_planeMaterialCB = { XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), 0, 0, 0.7f, 1, 0.4f, 50 };
+
+	// Albedos
+	XMFLOAT4 yellow = XMFLOAT4(1.0f, 1.0f, 0.5f, 1.0f);
+	XMFLOAT4 purple = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	XMFLOAT4 chromium_purple = XMFLOAT4(purple.x * ChromiumReflectance.x,
+		purple.y * ChromiumReflectance.y,
+		purple.z * ChromiumReflectance.z,
+		1.0f);
+
+	/*UINT offset = 0;
+	// Analytic primitives.
+	{
+		using namespace AnalyticPrimitive;
+		SetAttributes(offset + AABB, yellow, 0.3f);
+		SetAttributes(offset + Spheres, chromium_purple, 0.8f);
+		offset += AnalyticPrimitive::Count;
+	}*/
+
+	// Volumetric primitives.
+	{
+		XMFLOAT4 c0 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c1 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c2 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c3 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		using namespace VolumetricPrimitive;
+		SetAttributes(Metaballs, c0, c1, c2, c3, std::floor(distrib(gen) * 4), std::floor(distrib(gen) * 4), 1);
+		//offset += VolumetricPrimitive::Count;
+	}
+}
+
 void DXProceduralProject::CreateCreatureBuffers()
 {
     auto device = m_deviceResources->GetD3DDevice();
@@ -237,6 +242,10 @@ void DXProceduralProject::CreateCreatureBuffers()
 
 void DXProceduralProject::UpdateCreatureAttributes()
 {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> distrib(0, 1);
+
 	auto ResetBuffers = [&](UINT primitiveIndex)
 	{
 		for (int h = 0; h < HEAD_COUNT; h++)
@@ -321,6 +330,19 @@ void DXProceduralProject::UpdateCreatureAttributes()
             m_rotBuffer[primitiveIndex].rotations[r] = creature->jointRots[r];
         }
 		delete(creature);
+
+		XMFLOAT4 c0 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c1 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c2 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		XMFLOAT4 c3 = XMFLOAT4(distrib(gen), distrib(gen), distrib(gen), 1);
+		
+		for (int c = 0; c < 4; c++)
+		{
+			m_headSpineBuffer[primitiveIndex].colorData[c*4] = distrib(gen);
+			m_headSpineBuffer[primitiveIndex].colorData[c*4 + 1] = distrib(gen);
+			m_headSpineBuffer[primitiveIndex].colorData[c * 4 + 2] = distrib(gen);
+			m_headSpineBuffer[primitiveIndex].colorData[c * 4 + 3] = 1;
+		}
     };
 
     /*UINT offset = 0;
@@ -339,6 +361,8 @@ void DXProceduralProject::UpdateCreatureAttributes()
         SetCreatureBuffers(Metaballs);
         //offset += VolumetricPrimitive::Count;
     }
+
+	UpdateMaterialAttributes();
 }
 
 void DXProceduralProject::CreateTextureBuffers(std::string file)

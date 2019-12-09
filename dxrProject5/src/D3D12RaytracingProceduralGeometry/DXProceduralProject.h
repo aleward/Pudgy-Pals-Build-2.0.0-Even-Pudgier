@@ -148,6 +148,7 @@ private:
 	void CreateTextureBuffers(std::string file);
 	void UpdateCameraMatrices();
 	void UpdateAABBPrimitiveAttributes(float animationTime);
+	void UpdateMaterialAttributes();
     void UpdateCreatureAttributes();
 
 	// DXR-RootSignature.cpp

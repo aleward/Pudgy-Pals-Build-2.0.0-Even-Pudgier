@@ -44,7 +44,7 @@ void Limb::generate(XMFLOAT3 startPos, float startRadius) {
 		if (isLeg && i + 1 >= numJoints) {
 			newPos.y = 1.5;
 		}
-		//if (newPos.z < 0.05) newPos.z = 0.1;
+		if (newPos.z < 0.25) newPos.z = 0.25;
 		if (newPos.y < -0.5) newPos.y = -0.5;
 		jointPos.push_back(newPos);
 		radius += (distrib(gen) * 2 - 1) * 0.05 - 0.1;
