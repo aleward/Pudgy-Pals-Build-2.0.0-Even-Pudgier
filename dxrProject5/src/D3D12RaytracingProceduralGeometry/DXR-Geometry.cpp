@@ -33,7 +33,6 @@ void DXProceduralProject::BuildPlaneGeometry()
     {
         3,1,0,
         2,1,3,
-
     };
 
     // Cube vertices positions and corresponding triangle normals.
@@ -45,13 +44,55 @@ void DXProceduralProject::BuildPlaneGeometry()
         { XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // vertex 3
     };
 
-    AllocateUploadBuffer(device, indices, sizeof(indices), &m_indexBuffer.resource);
-    AllocateUploadBuffer(device, vertices, sizeof(vertices), &m_vertexBuffer.resource);
+	AllocateUploadBuffer(device, indices, sizeof(indices), &m_indexBuffer.resource);
+	AllocateUploadBuffer(device, vertices, sizeof(vertices), &m_vertexBuffer.resource);
 
-    // Vertex buffer is passed to the shader along with index buffer as a descriptor range.
-    UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, sizeof(indices) / 4, 0);
-    UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, ARRAYSIZE(vertices), sizeof(vertices[0]));
+	// Vertex buffer is passed to the shader along with index buffer as a descriptor range.
+	UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, sizeof(indices) / 4, 0);
+	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, sizeof(vertices) / sizeof(vertices[0]), sizeof(vertices[0]));
     ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");
+}
+
+void DXProceduralProject::BuildMeshGeometry(std::string basePath, std::string objectName)
+{
+	auto device = m_deviceResources->GetD3DDevice();
+
+	// Plane indices:
+	// 0--------1
+	// '		'
+	// '		'
+	// 3--------2
+	//
+	// Each triple represents a triangle in counter-clockwise order.
+	// If you look at the positions of these vertices below, you will notice 
+	// that triangle cross products point up, which needed if we want the plane to face upwards
+	// i.e have a normal vector pointing up.
+	std::vector<Model::Mesh> meshes = Model::MeshLoader::load_obj(basePath, objectName);
+	std::vector<Model::Index> indexVector = meshes[0].vertex_indices;
+	std::vector<Model::Vertex> vertexVector = meshes[0].vertices;
+	Index *indices = new Index[indexVector.size()];
+	Vertex *vertices = new Vertex[vertexVector.size()];
+	for (int i = 0; i < vertexVector.size(); i++) {
+		Model::Vertex v = vertexVector[i];
+		Vertex newV;
+		newV.position = v.position;
+		newV.normal = v.normal;
+		vertices[i] = newV;
+	}
+	for (int j = 0; j < indexVector.size(); j++) {
+		indices[j] = indexVector[j];
+	}
+
+	AllocateUploadBuffer(device, indices, indexVector.size() * sizeof(Index), &m_indexBuffer.resource);
+	AllocateUploadBuffer(device, vertices, vertexVector.size() * sizeof(Vertex), &m_vertexBuffer.resource);
+
+	// Vertex buffer is passed to the shader along with index buffer as a descriptor range.
+	UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, indexVector.size(), sizeof(indices[0]));
+	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, vertexVector.size(), sizeof(vertices[0]));
+
+	free(vertices);
+	free(indices);
+	ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");
 }
 
 // TODO-2.5: Build AABBs for procedural geometry that will be used within the acceleration structure.
@@ -124,5 +165,6 @@ void DXProceduralProject::BuildProceduralGeometryAABBs()
 void DXProceduralProject::BuildGeometry()
 {
     BuildPlaneGeometry();
+	//BuildMeshGeometry("objects/", "suzanne.obj");
     BuildProceduralGeometryAABBs();
 }

@@ -16,12 +16,14 @@ void DXProceduralProject::CreateRootSignatures()
 		// A descriptor range is like an array of descriptors of the same type (UAV, SRV, CBV).
 		// The range has the following data: type of resource accessed, the number of descriptors, and the base register the shader
 		// should look at to access these resources.
-		CD3DX12_DESCRIPTOR_RANGE ranges[2];
+		CD3DX12_DESCRIPTOR_RANGE ranges[3];
 		ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);  // 1 output texture
 
 		// TODO-2.2: In range index 1 (the second range), initialize 2 SRV resources at register 1: indices and vertices of triangle data.
                 // This will effectively put the indices at register 1, and the vertices at register 2.
 		ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1);
+
+		ranges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1);
 
 		// TODO-2.2: Initialize all the parameters of the GlobalRootSignature in their appropriate slots.
 		//		* See GlobalRootSignature in RaytracingSceneDefines.h to understand what they are.
@@ -49,6 +51,7 @@ void DXProceduralProject::CreateRootSignatures()
         rootParameters[GlobalRootSignature::Slot::LimbBuffer].InitAsShaderResourceView(6);
         rootParameters[GlobalRootSignature::Slot::RotBuffer].InitAsShaderResourceView(7);
 		rootParameters[GlobalRootSignature::Slot::VertexBuffers].InitAsDescriptorTable(1, &ranges[1]);
+		rootParameters[GlobalRootSignature::Slot::TextureBuffer].InitAsDescriptorTable(1, &ranges[2]);
 
 		// Finally, we bundle up all the descriptors you filled up and tell the device to create this global root signature!
 		CD3DX12_ROOT_SIGNATURE_DESC globalRootSignatureDesc(ARRAYSIZE(rootParameters), rootParameters);

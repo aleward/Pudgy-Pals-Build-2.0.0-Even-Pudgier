@@ -133,11 +133,18 @@ struct ProceduralPrimitiveAttributes
 // Constant buffer per primitive. A primitive is considered static.
 struct PrimitiveConstantBuffer
 {
-    XMFLOAT4 albedo;
+    XMFLOAT4 albedo0;
+	XMFLOAT4 albedo1;
+	XMFLOAT4 albedo2;
+	XMFLOAT4 albedo3;
+	int whichNoise0;
+	int whichNoise1;
     float reflectanceCoef;
     float diffuseCoef;
     float specularCoef;
     float specularPower;
+	bool hasTexture;
+	float textureResolution;
 };
 
 // Attributes per primitive instance. An instance primitive actually exists in the scene and may be dynamic.
@@ -181,6 +188,17 @@ struct HeadSpineInfoBuffer
     float headData[HEAD_COUNT];
     float spineLocData[SPINE_LOC_COUNT];
     float spineRadData[SPINE_RAD_COUNT];
+};
+
+struct ModelInfo
+{
+	UINT model_offset;
+	UINT texture_offset;
+	UINT texture_normal_offset;
+	UINT material_offset;
+	UINT diffuse_sampler_offset;
+	UINT normal_sampler_offset;
+	XMMATRIX rotation_scale_matrix;
 };
 
 #endif // RAYTRACINGHLSLCOMPAT_H

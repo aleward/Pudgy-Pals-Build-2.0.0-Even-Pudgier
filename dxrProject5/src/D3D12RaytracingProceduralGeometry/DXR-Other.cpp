@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
-#include <iostream>
 
 // LOOKAT-1.8.3: This file contains pretty much everything else we decided was not too important. Feel free to explore what's going on here though.
 
@@ -90,8 +89,6 @@ void DXProceduralProject::CreateDeviceDependentResources()
 
     // Create an output 2D texture to store the raytracing result to.
     CreateRaytracingOutputResource();
-
-	InitImGUI();
 }
 
 // Selects the RTX API to use and tells the device to create a root signature given the descriptor.
@@ -239,14 +236,13 @@ void DXProceduralProject::CopyRaytracingOutputToBackbuffer()
     commandList->ResourceBarrier(ARRAYSIZE(preCopyBarriers), preCopyBarriers);
 
     commandList->CopyResource(renderTarget, m_raytracingOutput.Get());
+	//RenderImGUI();
 
     D3D12_RESOURCE_BARRIER postCopyBarriers[2];
     postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT);
     postCopyBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(m_raytracingOutput.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
     commandList->ResourceBarrier(ARRAYSIZE(postCopyBarriers), postCopyBarriers);
-
-	RenderImGUI();
 
 	m_deviceResources->ExecuteCommandList();
 
@@ -306,6 +302,9 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_vertexBuffer.resource.Reset();
     m_aabbBuffer.resource.Reset();
 
+	//m_textureBuffer.resource.Reset();
+	//m_textureBufferUploadHeap->Release();
+
     ResetComPtrArray(&m_bottomLevelAS);
     m_topLevelAS.Reset();
 
@@ -314,8 +313,6 @@ void DXProceduralProject::ReleaseDeviceDependentResources()
     m_rayGenShaderTable.Reset();
     m_missShaderTable.Reset();
     m_hitGroupShaderTable.Reset();
-
-	ShutdownImGUI();
 }
 
 // Recreate the d3 device if it ever gets lost.
