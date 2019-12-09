@@ -136,5 +136,4 @@ R - Generate creature with Random head type
 TODO: Add links to marching cubes references
 [Marching Cubes](TODO)
 
-TODO: Add links to UV unwrapping references
-[UV Unwrapping](TODO)
+[UV Unwrapping](https://stackoverflow.com/questions/18578943/automatically-generating-uv-coordinates-algorithms)
