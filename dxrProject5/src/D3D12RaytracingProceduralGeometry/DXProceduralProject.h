@@ -12,6 +12,8 @@
 #include "RaytracingSceneDefines.h"
 #include "DirectXRaytracingHelper.h"
 #include "PerformanceTimers.h"
+#include "Mesh.h"
+#include "March.h"
 
 // Fallback Layer uses DirectX Raytracing if a driver and OS supports it. 
 // Otherwise, it falls back to compute pipeline to emulate raytracing.
@@ -37,9 +39,14 @@ public:
     virtual void OnSizeChanged(UINT width, UINT height, bool minimized);
     virtual void OnDestroy();
 
+	void OnMarchCubes();
+
     virtual IDXGISwapChain* GetSwapchain() { return m_deviceResources->GetSwapChain(); }
 
 private:
+	Cases cases;
+	SDF sdf;
+
     static const UINT FrameCount = 3;
 
 	// LOOKAT-1.7: Carefully read ALL the private variables of this class to understand 
@@ -154,6 +161,8 @@ private:
 	void BuildPlaneGeometry();
 	void BuildProceduralGeometryAABBs();
 	void BuildGeometry();
+	void BuildMeshGeometry(std::string basePath, std::string objectName);
+	void BuildMeshFromMarch(std::vector<int> indx, std::vector<vec3> pos, std::vector<vec3> norms);
 
 	// DXR-AccelerationStructure.cpp
 	void BuildGeometryDescsForBottomLevelAS(std::array<std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>, BottomLevelASType::Count>& geometryDescs);

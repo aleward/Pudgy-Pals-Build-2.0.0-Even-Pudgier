@@ -28,6 +28,12 @@
     <Filter Include="Header Files\CreatureGen">
       <UniqueIdentifier>{7872fa7b-009e-43ca-8e7d-8a893c67c14e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Marching">
+      <UniqueIdentifier>{07cb50d4-ad98-4899-8986-431515f17188}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Marching">
+      <UniqueIdentifier>{8a5e3755-9b5e-4011-9130-1c9020f6630b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -92,6 +98,19 @@
     </ClInclude>
     <ClInclude Include="Appendages.h">
       <Filter>Header Files\CreatureGen</Filter>
+    </ClInclude>
+    <ClInclude Include="Cases.h">
+      <Filter>Header Files\Marching</Filter>
+    </ClInclude>
+    <ClInclude Include="CubePieces.h">
+      <Filter>Header Files\Marching</Filter>
+    </ClInclude>
+    <ClInclude Include="March.h" />
+    <ClInclude Include="SDFfuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +185,16 @@
     </ClCompile>
     <ClCompile Include="Appendages.cpp">
       <Filter>Source Files\CreatureGen</Filter>
+    </ClCompile>
+    <ClCompile Include="Cases.cpp">
+      <Filter>Source Files\Marching</Filter>
+    </ClCompile>
+    <ClCompile Include="CubePieces.cpp">
+      <Filter>Source Files\Marching</Filter>
+    </ClCompile>
+    <ClCompile Include="March.cpp" />
+    <ClCompile Include="SDFfuncs.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

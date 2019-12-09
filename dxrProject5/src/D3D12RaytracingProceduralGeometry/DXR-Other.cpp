@@ -20,7 +20,8 @@ DXProceduralProject::DXProceduralProject(UINT width, UINT height, std::wstring n
 	m_descriptorSize(0),
 	m_missShaderTableStrideInBytes(UINT_MAX),
 	m_hitGroupShaderTableStrideInBytes(UINT_MAX),
-	m_forceComputeFallback(false)
+	m_forceComputeFallback(false),
+	cases(Cases())
 {
 	m_forceComputeFallback = false;
 	SelectRaytracingAPI(RaytracingAPI::FallbackLayer);

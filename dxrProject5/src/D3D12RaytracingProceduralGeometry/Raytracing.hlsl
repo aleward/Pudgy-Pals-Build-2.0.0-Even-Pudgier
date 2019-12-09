@@ -782,8 +782,8 @@ float sceneSDF(float3 p) {
         headSDF = trollHeadSDF(p + float3(u_Head[0], u_Head[1], u_Head[2]), u_Head);
     }
     float headSpine = smin(spineSDF(p, headSpineAttr.spineLocData, headSpineAttr.spineRadData), headSDF, .1);
-	return smin(smin(armSDF(p),
-        appendagesSDF(p), .2), headSpine, .1);
+	return headSpine;/*smin(smin(armSDF(p),
+        appendagesSDF(p), .2), headSpine, .1);*/
 }
 
 //~~~~~~~~~~~~~~~~~~~~ACTUAL RAY MARCHING STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
