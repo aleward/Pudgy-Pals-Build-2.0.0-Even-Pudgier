@@ -72,16 +72,20 @@ TODO: Alexis
 Because the original plan was to export textured creature meshes, we would need a system in place to UV unwrap arbitrary meshes. Research revealed different options for implementing this.
 
 # Cubic Mapping
+
 ![](images/uvUnwrapping.png)
+
 Cubic mapping creates 6 sets of planar-projected UV faces - one for each face of an enclosing cube. Each face is assigned to a planar projection based on their closest normals; front/back, left/right, and top/bottom facing faces are grouped together and projected flat onto the plane they are assigned to. Adjacent faces in the same plane are sown together into shells. However, those shells may overlap in space when projected to a plane; a sophisticated layout technique is needed to optimally arrange all generated shells in UV space such that none of them overlap and the area granted to each face is maximized relative to 3D scale. 3D modeling packages such as Maya and Houdini offer triplanar mapping as a standard UV unwrapping method.
 
 # Per-Face Mapping
+
 ![](images/noUnwrapping.png)
+
 Per-face mapping places each face independently one after the next in UV space, starting in the top left corner and proceding by column then row, forming a grid-like arrangement. The entire grid is then uniformly scaled to occupy a 1 by 1 UV space. Though easy to compute and spatially efficient, the texture maps used for meshes UV mapped in this fasion are unreadable to the human eye since the textures are completely discontinuous across edges. Still, for textures that are only baked to and read from - never painted on by hand or manipulated in UV space - this is completely acceptable.
 
 ## Ambient Occlusion
 
-TODO: Josh
+Ambient occlusion is computed by calculating the ratio of hitting to missing rays emitting from given points on the sdf surface. We sampled these rays on a normal-aligned hemisphere with uniform weighting.
 
 ![](images/ambient1.png)
 ![](images/ambient2.png)
