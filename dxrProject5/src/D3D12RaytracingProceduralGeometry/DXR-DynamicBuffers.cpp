@@ -211,6 +211,46 @@ void DXProceduralProject::CreateCreatureBuffers()
     m_rotBuffer.Create(device, IntersectionShaderType::TotalPrimitiveCount, frameCount, L"Head Spine Info Buffer");
 }
 
+void DXProceduralProject::ResetCreatureAttributes() {
+	for (int h = 0; h < HEAD_COUNT; h++)
+	{
+		m_headSpineBuffer[0].headData[h] = 0;
+	}
+	for (int sl = 0; sl < SPINE_LOC_COUNT; sl++)
+	{
+		m_headSpineBuffer[0].spineLocData[sl] = 0;
+	}
+	for (int sr = 0; sr < SPINE_RAD_COUNT; sr++)
+	{
+		m_headSpineBuffer[0].spineRadData[sr] = 0;
+	}
+
+	m_appenBuffer[0].numAppen = 0;
+	for (int a = 0; a < APPEN_COUNT; a++)
+	{
+		m_appenBuffer[0].appenBools[a] = 0;
+		m_appenBuffer[0].appenRads[a] = 0;
+	}
+
+	for (int l = 0; l < LIMBLEN_COUNT; l++)
+	{
+		m_limbBuffer[0].limbLengths[l] = 0;
+	}
+	for (int jl = 0; jl < JOINT_LOC_COUNT; jl++)
+	{
+		m_limbBuffer[0].jointLocData[jl] = 0;
+	}
+	for (int jr = 0; jr < JOINT_RAD_COUNT; jr++)
+	{
+		m_limbBuffer[0].jointRadData[jr] = 0;
+	}
+
+	for (int r = 0; r < ROT_COUNT; r++)
+	{
+		m_rotBuffer[0].rotations[r] = 0;
+	}
+}
+
 void DXProceduralProject::UpdateCreatureAttributes()
 {
     auto SetCreatureBuffers = [&](UINT primitiveIndex)

@@ -147,6 +147,8 @@ private:
 	void UpdateAABBPrimitiveAttributes(float animationTime);
     void UpdateCreatureAttributes();
 
+	void ResetCreatureAttributes();
+
 	// DXR-RootSignature.cpp
 	void CreateRootSignatures();
 

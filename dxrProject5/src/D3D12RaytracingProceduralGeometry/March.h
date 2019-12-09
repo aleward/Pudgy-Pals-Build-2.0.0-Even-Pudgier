@@ -29,6 +29,7 @@ public:
 
     // The end result
     //finalMesh: Mesh;
+	std::vector<int> triIndxVBO;
 
 
 	/// FUNCTIONS

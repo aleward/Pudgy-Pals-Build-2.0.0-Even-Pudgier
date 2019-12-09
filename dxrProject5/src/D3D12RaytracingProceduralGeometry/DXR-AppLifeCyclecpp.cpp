@@ -141,6 +141,9 @@ void DXProceduralProject::OnMarchCubes() {
 	currMarch.testVertexSDFs();
 	currMarch.testBoxValues();
 	currMarch.setTriangles();
+	currMarch.callMeshClass();
+
+	BuildMeshFromMarch(currMarch.triIndxVBO, currMarch.triVerts, currMarch.triNorms);
 
 	float num = sdf.sceneSDF(vec3(0.0, 0.0, 0.0));
 	float num2 = sdf.sceneSDF(vec3(15.0, 10.0, 0.0));
@@ -178,6 +181,7 @@ void DXProceduralProject::OnKeyDown(UINT8 key)
 		break;
 	case 'M':
 		OnMarchCubes();
+		ResetCreatureAttributes();
 		break;
 	case 'G':
 		m_animateGeometry = !m_animateGeometry;

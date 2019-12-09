@@ -187,24 +187,24 @@ void DXProceduralProject::BuildMeshFromMarch(std::vector<int> indx, std::vector<
 
 	Index *indices = new Index[indx.size()];
 	Vertex *vertices = new Vertex[pos.size()];
-	/*for (int i = 0; i < pos.size(); i++) {
+	for (int i = 0; i < pos.size(); i++) {
 		Vertex newV;
-		newV.position = XMFLOAT3(pos[i][0], pos[i][0], pos[i][0]);
-		newV.normal = v.normal;
+		newV.position = XMFLOAT3(pos[i][0], pos[i][1], pos[i][2]);
+		newV.normal = XMFLOAT3(norms[i][0], norms[i][1], norms[i][2]);
 		vertices[i] = newV;
 	}
-	for (int j = 0; j < indexVector.size(); j++) {
-		indices[j] = indexVector[j];
+	for (int j = 0; j < indx.size(); j++) {
+		indices[j] = indx[j];
 	}
 
-	AllocateUploadBuffer(device, indices, indexVector.size() * sizeof(Index), &m_indexBuffer.resource);
-	AllocateUploadBuffer(device, vertices, vertexVector.size() * sizeof(Vertex), &m_vertexBuffer.resource);
+	AllocateUploadBuffer(device, indices, indx.size() * sizeof(Index), &m_indexBuffer.resource);
+	AllocateUploadBuffer(device, vertices, pos.size() * sizeof(Vertex), &m_vertexBuffer.resource);
 
 	// Vertex buffer is passed to the shader along with index buffer as a descriptor range.
-	UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, indexVector.size(), sizeof(indices[0]));
-	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, vertexVector.size(), sizeof(vertices[0]));
+	UINT descriptorIndexIB = CreateBufferSRV(&m_indexBuffer, indx.size(), sizeof(indices[0]));
+	UINT descriptorIndexVB = CreateBufferSRV(&m_vertexBuffer, pos.size(), sizeof(vertices[0]));
 
 	free(vertices);
 	free(indices);
-	ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");*/
+	ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index");
 }

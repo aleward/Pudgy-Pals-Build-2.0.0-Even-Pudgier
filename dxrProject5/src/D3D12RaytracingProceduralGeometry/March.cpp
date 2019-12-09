@@ -22,7 +22,8 @@ March::March(vec3 scale, vec3 trans, float divs, Cases* cases, SDF* sdfS) :
 	edges(),	 //new Map<string, Edge>();
 
 	triVerts(),
-	triNorms()
+	triNorms(),
+	triIndxVBO()
 {
 	// Allocate space
 	positions.resize(numVerts);
@@ -151,7 +152,14 @@ March::~March()
 
 void March::callMeshClass()
 {
-
+	for (int i = 0; i < blocks.size(); i++) {
+		Block& currBlock = *blocks[i];
+		for (int j = 0; j < currBlock.triangles.size(); j++) {
+			for (int k = 0; k < 3; k++) {
+				triIndxVBO.push_back(currBlock.triangles[j]->indices[k]);
+			}
+		}
+	}
 }
 
 void March::testVertexSDFs()
