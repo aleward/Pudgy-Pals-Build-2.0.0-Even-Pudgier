@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "DXProceduralProject.h"
 #include "CompiledShaders\Raytracing.hlsl.h"
+#include "Mesh.h"
+//#include "SDFfucns.h"
+//#include "CubePieces.h"
 
 using namespace std;
 using namespace DX;
@@ -32,6 +35,8 @@ void DXProceduralProject::OnInit()
 	CreateWindowSizeDependentResources();
 
     UpdateCreatureAttributes();
+
+	//std::vector<Model::Mesh> meshes = Model::MeshLoader::load_obj();
 }
 
 // LOOKAT-1.8.0: Update frame-based values (e.g. camera effects, light, animation time)
@@ -89,6 +94,8 @@ void DXProceduralProject::OnRender()
 	auto device = m_deviceResources->GetD3DDevice();
 	auto commandList = m_deviceResources->GetCommandList();
 
+	StartFrameImGUI();
+
 	// Begin frame.
 	m_deviceResources->Prepare();
 	for (auto& gpuTimer : m_gpuTimers)
@@ -131,9 +138,32 @@ void DXProceduralProject::OnDeviceRestored()
 	CreateWindowSizeDependentResources();
 }
 
+void DXProceduralProject::OnMarchCubes() {
+	sdf = SDF(m_headSpineBuffer, m_appenBuffer, m_limbBuffer, m_rotBuffer);
+	/*setHeadBuffer(m_headSpineBuffer);
+	setAppenBuffer(m_appenBuffer);
+	setLimbBuffer(m_limbBuffer);
+	setLimbBuffer(m_rotBuffer);*/
+	March currMarch = March(vec3(1.7, 1.7, 1.8), vec3(0.0, -0.1, -0.2), 10.0, &cases, &sdf);
+	currMarch.testVertexSDFs();
+	currMarch.testBoxValues();
+	currMarch.setTriangles();
+
+	float num = sdf.sceneSDF(vec3(0.0, 0.0, 0.0));
+	float num2 = sdf.sceneSDF(vec3(15.0, 10.0, 0.0));
+
+	vec3 v = mat3::rotateX(sdf.radians(90.0)) * vec3(0.0, 0.0, 1.0);
+	OutputDebugStringA(LPCSTR((to_string(num) + "\n").c_str()));//printVec(v).c_str()));
+	OutputDebugStringA(LPCSTR((to_string(num2) + "\n").c_str()));
+}
+
 // Handles all keyboard inputs. You can add fun camera controls here if you wish to.
 void DXProceduralProject::OnKeyDown(UINT8 key)
 {
+	if (ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantTextInput)
+	{
+		return;
+	}
 	// Store previous values.
 	RaytracingAPI previousRaytracingAPI = m_raytracingAPI;
 	bool previousForceComputeFallback = m_forceComputeFallback;
@@ -156,6 +186,9 @@ void DXProceduralProject::OnKeyDown(UINT8 key)
 		break;
 	case 'C':
 		m_animateCamera = !m_animateCamera;
+		break;
+	case 'M':
+		OnMarchCubes();
 		break;
 	case 'G':
 		m_animateGeometry = !m_animateGeometry;

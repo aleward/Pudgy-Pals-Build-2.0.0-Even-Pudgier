@@ -12,6 +12,8 @@
 #include "RaytracingSceneDefines.h"
 #include "DirectXRaytracingHelper.h"
 #include "PerformanceTimers.h"
+#include "MeshLoader.h"
+#include "March.h"
 
 // Fallback Layer uses DirectX Raytracing if a driver and OS supports it. 
 // Otherwise, it falls back to compute pipeline to emulate raytracing.
@@ -37,9 +39,16 @@ public:
     virtual void OnSizeChanged(UINT width, UINT height, bool minimized);
     virtual void OnDestroy();
 
+	// Marching Cubes
+	void OnMarchCubes();
+
     virtual IDXGISwapChain* GetSwapchain() { return m_deviceResources->GetSwapChain(); }
 
 private:
+	// For Marching Cubes
+	Cases cases;
+	SDF sdf;
+
     static const UINT FrameCount = 3;
 
 	// LOOKAT-1.7: Carefully read ALL the private variables of this class to understand 
@@ -195,4 +204,14 @@ private:
     void CalculateFrameStats();
 	void EnableDirectXRaytracing(IDXGIAdapter1* adapter);
 	void ParseCommandLineArgs(WCHAR* argv[], int argc);
+
+	// ImGUI
+#define HEAP_DESCRIPTOR_SIZE (10000)
+	ComPtr<ID3D12DescriptorHeap> g_pd3dSrvDescHeap;
+	void InitImGUI();
+	void StartFrameImGUI();
+	void RenderImGUI();
+	void ShutdownImGUI();
+
+	int current_imgui_heap_descriptor = 0;
 };
